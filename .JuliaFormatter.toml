@@ -1,0 +1,9 @@
+# style = "sciml"
+format_docstrings = true
+separate_kwargs_with_semicolon = true
+long_to_short_function_def = true
+whitespace_typedefs = false
+always_use_return = true
+whitespace_in_kwargs = false
+disallow_single_arg_nesting = true
+join_lines_based_on_source = true
