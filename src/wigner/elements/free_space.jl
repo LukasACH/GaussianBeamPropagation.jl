@@ -1,3 +1,8 @@
+"""
+    FreeSpace
+
+TODO
+"""
 struct FreeSpace <: AbstractElement
     rtm::SMatrix{4,4,Float64,16}
 

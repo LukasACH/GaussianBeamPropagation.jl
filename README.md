@@ -40,7 +40,7 @@ A simple 4f re-imaging system with a magnification of 2 can be expressed as.
 ```julia-repl
 julia> using GaussianBeamPropagation
 
-julia> using Untiful # optional, but enables the use of the @u_str macros
+julia> using Unitful # optional, but enables the use of the @u_str macros
 
 julia> λ = 1030u"nm"
 1030 nm

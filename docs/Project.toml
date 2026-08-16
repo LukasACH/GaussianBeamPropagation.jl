@@ -1,3 +1,4 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
-GaussianBeamPropagation = "889ABB49-4AC3-45B8-8760-419A35A1F3CA"
+GaussianBeamPropagation = "889abb49-4ac3-45b8-8760-419a35a1f3ca"
+Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"

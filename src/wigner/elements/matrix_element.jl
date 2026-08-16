@@ -1,3 +1,8 @@
+"""
+    MatrixElement
+
+TODO
+"""
 struct MatrixElement <: AbstractElement
     rtm::SMatrix{4,4,Float64,16}
 end
