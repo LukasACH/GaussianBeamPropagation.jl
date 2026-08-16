@@ -1,3 +1,7 @@
 using Documenter, GaussianBeamPropagation
 
-makedocs(; sitename="My Documentation")
+makedocs()
+
+deploydocs(
+    ; repo="github.com/LukasACH/GaussianBeamPropagation.jl.git",
+)
