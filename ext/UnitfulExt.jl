@@ -3,24 +3,21 @@ module UnitfulExt
 using GaussianBeamPropagation
 using Unitful
 
-function GaussianBeamPropagation.OpticalPower(P_xx::Quantity{<:Real,Unitful.𝐋^-1}, P_xy::Quantity{<:Real,Unitful.𝐋^-1}, P_yy::Quantity{<:Real,Unitful.𝐋^-1})
-    return OpticalPower(promote(ustrip(u"m^-1", P_xx), ustrip(u"m^-1", P_xy), ustrip(u"m^-1", P_yy))...)
-end
+GaussianBeamPropagation.OpticalPower(P_xx::Quantity{<:Real,Unitful.𝐋^-1}, P_xy::Quantity{<:Real,Unitful.𝐋^-1}, P_yy::Quantity{<:Real,Unitful.𝐋^-1}) =
+    OpticalPower(ustrip(u"m^-1", P_xx), ustrip(u"m^-1", P_xy), ustrip(u"m^-1", P_yy))
 
-function GaussianBeamPropagation.OpticalPower(Px::Quantity{A,Unitful.𝐋^-1}, Py::Quantity{B,Unitful.𝐋^-1}; φ::Real=0.0f0) where {A<:Real,B<:Real}
-    return OpticalPower(rotate2(Px, Py, convert(promote_type(A, B), φ),)...)
-end
+GaussianBeamPropagation.OpticalPower(Px::Quantity{<:Real,Unitful.𝐋^-1}, Py::Quantity{<:Real,Unitful.𝐋^-1}; φ::Real=0.0f0) =
+    OpticalPower(ustrip(u"m^-1", Px), ustrip(u"m^-1", Py); φ)
 
-GaussianBeamPropagation.OpticalPower(P::Quantity{<:Real,Unitful.𝐋^-1}) = OpticalPower(P, P)
+GaussianBeamPropagation.OpticalPower(P::Quantity{<:Real,Unitful.𝐋^-1}) = OpticalPower(ustrip(u"m^-1", P))
 
 GaussianBeamPropagation.Curvature(κ_xx::Quantity{<:Real,Unitful.𝐋^-1}, κ_xy::Quantity{<:Real,Unitful.𝐋^-1}, κ_yy::Quantity{<:Real,Unitful.𝐋^-1}) =
-    Curvature(promote(ustrip(u"m^-1", κ_xx), ustrip(u"m^-1", κ_xy), ustrip(u"m^-1", κ_yy))...)
+    Curvature(ustrip(u"m^-1", κ_xx), ustrip(u"m^-1", κ_xy), ustrip(u"m^-1", κ_yy))
 
-function GaussianBeamPropagation.Curvature(κx::Quantity{A,Unitful.𝐋^-1}, κy::Quantity{B,Unitful.𝐋^-1}; φ::Real=0.0f0) where {A<:Real,B<:Real}
-    return Curvature(rotate2(κx, κy, convert(promote_type(A, B), φ))...)
-end
+GaussianBeamPropagation.Curvature(κx::Quantity{A,Unitful.𝐋^-1}, κy::Quantity{B,Unitful.𝐋^-1}; φ::Real=0.0f0) where {A<:Real,B<:Real} =
+    Curvature(ustrip(u"m^-1", κx), ustrip(u"m^-1", κy); φ)
 
-GaussianBeamPropagation.Curvature(κ::Quantity{<:Real,Unitful.𝐋^-1}) = Curvature(κ, κ)
+GaussianBeamPropagation.Curvature(κ::Quantity{<:Real,Unitful.𝐋^-1}) = Curvature(ustrip(u"m^-1", κ))
 
 function GaussianBeamPropagation.rotate2(
     x::Quantity{<:Real,D}, y::Quantity{<:Real,D}, α::Real
