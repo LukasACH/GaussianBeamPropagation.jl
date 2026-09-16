@@ -3,6 +3,25 @@ module UnitfulExt
 using GaussianBeamPropagation
 using Unitful
 
+function GaussianBeamPropagation.OpticalPower(P_xx::Quantity{<:Real,Unitful.𝐋^-1}, P_xy::Quantity{<:Real,Unitful.𝐋^-1}, P_yy::Quantity{<:Real,Unitful.𝐋^-1})
+    return OpticalPower(promote(ustrip(u"m^-1", P_xx), ustrip(u"m^-1", P_xy), ustrip(u"m^-1", P_yy))...)
+end
+
+function GaussianBeamPropagation.OpticalPower(Px::Quantity{A,Unitful.𝐋^-1}, Py::Quantity{B,Unitful.𝐋^-1}; φ::Real=0.0f0) where {A<:Real,B<:Real}
+    return OpticalPower(rotate2(Px, Py, convert(promote_type(A, B), φ),)...)
+end
+
+GaussianBeamPropagation.OpticalPower(P::Quantity{<:Real,Unitful.𝐋^-1}) = OpticalPower(P, P)
+
+GaussianBeamPropagation.Curvature(κ_xx::Quantity{<:Real,Unitful.𝐋^-1}, κ_xy::Quantity{<:Real,Unitful.𝐋^-1}, κ_yy::Quantity{<:Real,Unitful.𝐋^-1}) =
+    Curvature(promote(ustrip(u"m^-1", κ_xx), ustrip(u"m^-1", κ_xy), ustrip(u"m^-1", κ_yy))...)
+
+function GaussianBeamPropagation.Curvature(κx::Quantity{A,Unitful.𝐋^-1}, κy::Quantity{B,Unitful.𝐋^-1}; φ::Real=0.0f0) where {A<:Real,B<:Real}
+    return Curvature(rotate2(κx, κy, convert(promote_type(A, B), φ))...)
+end
+
+GaussianBeamPropagation.Curvature(κ::Quantity{<:Real,Unitful.𝐋^-1}) = Curvature(κ, κ)
+
 function GaussianBeamPropagation.rotate2(
     x::Quantity{<:Real,D}, y::Quantity{<:Real,D}, α::Real
 ) where {D}
@@ -150,24 +169,6 @@ function GaussianBeamPropagation.SecondOrderMoments(
     @debug "" rxrx rxry ryry θxθx θxθy θyθy rxθx rxθy ryθy
 
     return SecondOrderMoments(rxrx, rxry, ryry, θxθx, θxθy, θyθy, rxθx, rxθy, ryθx, ryθy)
-end
-
-function GaussianBeamPropagation.ThinLens(
-    Dx::Quantity{<:Real,Unitful.𝐋^-1}, Dy::Quantity{<:Real,Unitful.𝐋^-1}; kwargs...
-)
-    return ThinLens(ustrip(u"m^-1", Dx), ustrip(u"m^-1", Dy); kwargs...)
-end
-
-function GaussianBeamPropagation.ThinLens(
-    fx::Quantity{<:Real,Unitful.𝐋}, fy::Quantity{<:Real,Unitful.𝐋}; kwargs...
-)
-    return ThinLens(1 / ustrip(u"m", fx), 1 / ustrip(u"m", fy); kwargs...)
-end
-
-GaussianBeamPropagation.FreeSpace(d::Quantity) = FreeSpace(ustrip(u"m", d))
-
-function GaussianBeamPropagation.ThinLens(D::Quantity{<:Real}; ι::Real=0.0, θ::Real=0.0)
-    return ThinLens(D, D; ι, θ)
 end
 
 end
