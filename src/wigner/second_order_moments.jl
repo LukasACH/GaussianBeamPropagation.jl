@@ -91,7 +91,7 @@ end
         rxθx, rxθy, ryθx, ryθy,
     )
 """
-struct SecondOrderMoments{T<:AbstractFloat}
+struct SecondOrderMoments{T}
     rxrx::T
     rxry::T
     ryry::T
@@ -113,7 +113,7 @@ function SecondOrderMoments(; rx, ry, φ_r, θx, θy, φ_θ, rθx, rθy, φ_rθ,
     return SecondOrderMoments(rxrx, rxry, ryry, θxθx, θxθy, θyθy, rxθx, rxθy, ryθx, ryθy)
 end
 
-function SecondOrderMoments(rtm::SMatrix{4,4,Float64,16})
+function SecondOrderMoments(rtm::SMatrix{4,4,F,16}) where {F}
     rxrx = rtm[1, 1]
     rxry = (rtm[1, 2] + rtm[2, 1]) / 2
     ryry = rtm[2, 2]

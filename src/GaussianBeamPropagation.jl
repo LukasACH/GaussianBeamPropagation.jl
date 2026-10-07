@@ -35,6 +35,8 @@ export Beam, SecondOrderMoments
 export ThinLens,
     FreeSpace, OpticalInterface, MatrixElement, AbstractElement, ThickLens, Mirror
 
+export get_transfer_matrix
+
 export Curvature, OpticalPower, IncidenceAngle
 
 export radius, divergence, phase_curvature, twist

@@ -193,8 +193,8 @@ using StaticArrays
                 incidence = IncidenceAngle(ι=deg2rad(45), θ=deg2rad(0))
                 beam_out =
                     FreeSpace(1) *
-                    Mirror(power; incidence) *
-                    Beam(λ; wx=1e-3, wy=1e-3, rx=Inf, ry=Inf, φ=deg2rad(0))
+                        Mirror(power, incidence) *
+                        Beam(λ; wx=1e-3, wy=1e-3, rx=Inf, ry=Inf, φ=deg2rad(0))
 
                 @test radius(beam_out).φ ≈ deg2rad(0)
             end
@@ -205,8 +205,8 @@ using StaticArrays
                 incidence = IncidenceAngle(; ι=deg2rad(45), θ=deg2rad(-20))
                 beam_out =
                     FreeSpace(1) *
-                    Mirror(power; incidence) *
-                    Beam(λ; wx=1e-3, wy=1e-3, rx=Inf, ry=Inf, φ=deg2rad(0))
+                        Mirror(power, incidence) *
+                        Beam(λ; wx=1e-3, wy=1e-3, rx=Inf, ry=Inf, φ=deg2rad(0))
 
                 @test radius(beam_out).φ ≈ deg2rad(-20)
             end
@@ -217,8 +217,8 @@ using StaticArrays
 
                 beam_out =
                     FreeSpace(1) *
-                    Mirror(power; incidence) *
-                    Beam(λ; wx=1e-3, wy=1e-3, rx=Inf, ry=Inf, φ=deg2rad(0))
+                        Mirror(power, incidence) *
+                        Beam(λ; wx=1e-3, wy=1e-3, rx=Inf, ry=Inf, φ=deg2rad(0))
 
                 @test radius(beam_out).φ ≈ deg2rad(10)
             end
@@ -229,8 +229,8 @@ using StaticArrays
                 Dx = 2.0
                 Dy = 1.0
                 power = OpticalPower(Dx, Dy)
-                rtm = Mirror(power).rtm
-                @test rtm ≈ SA[
+                mirror = Mirror(power)
+                @test get_transfer_matrix(mirror) ≈ SA[
                     1.0 0.0 0.0 0.0
                     0.0 1.0 0.0 0.0
                     -Dx 0.0 1.0 0.0
@@ -240,8 +240,8 @@ using StaticArrays
 
             @testset "Free Space" begin
                 L = 1.5
-                rtm = FreeSpace(L).rtm
-                @test rtm == SA[
+                free_space = FreeSpace(L)
+                @test get_transfer_matrix(free_space) == SA[
                     1.0 0.0 L 0.0
                     0.0 1.0 0.0 L
                     0.0 0.0 1.0 0.0
@@ -256,41 +256,50 @@ using StaticArrays
             n = 1.5
             incidence = IncidenceAngle(deg2rad(10), π/3)
 
-            @test OpticalInterface(Curvature(), n).rtm ≈ SA[
+            @test get_transfer_matrix(OpticalInterface(Curvature(), n)) ≈ SA[
                 1.0 0.0 0.0 0.0;
                 0.0 1.0 0.0 0.0;
                 0.0 0.0 2/3 0.0;
                 0.0 0.0 0.0 2/3;
             ]
 
-            @test OpticalInterface(Curvature(1/2.0, 1/3.0), n).rtm ≈ SA[
+            @test get_transfer_matrix(OpticalInterface(Curvature(1/2.0, 1/3.0), n)) ≈ SA[
                 1.0 0.0 0.0 0.0;
                 0.0 1.0 0.0 0.0;
                 1/6 0.0 2/3 0.0;
                 0.0 1/9 0.0 2/3;
             ]
 
-            @test OpticalInterface(Curvature(1/2.0, 1/3.0; φ=π/6), n).rtm ≈ SA[
+            @test get_transfer_matrix(OpticalInterface(Curvature(1/2.0, 1/3.0; φ=π/6), n)) ≈
+                SA[
                 1.0 0.0 0.0 0.0;
                 0.0 1.0 0.0 0.0;
                 11/72 0.02405626121623441 2/3 0.0;
                 0.02405626121623441 1/8 0.0 2/3;
             ]
-            @test OpticalInterface(Curvature(), n, incidence).rtm ≈ SA[
+            @test get_transfer_matrix(OpticalInterface(Curvature(), n, incidence)) ≈ SA[
                 1.002149867536771 0.0037236798032304766 0.0 0.0;
                 0.0037236798032305035 1.0064496026103134 0.0 0.0;
                 0.0 0.0 0.6652456417038981 -0.002461287434338719;
                 0.0 0.0 -0.002461287434338687 0.6624035917783612;
             ]
 
-            @test OpticalInterface(Curvature(1/2.0, 1/3.0), n, incidence).rtm ≈ SA[
+            @test get_transfer_matrix(OpticalInterface(
+                Curvature(1/2.0, 1/3.0),
+                n,
+                incidence,
+            )) ≈ SA[
                 1.002149867536771 0.0037236798032304766 0.0 0.0;
                 0.0037236798032305035 1.0064496026103134 0.0 0.0;
                 0.16930659506108206 0.0014593981271599752 0.6652456417038981 -0.002461287434338719;
                 0.0012489993990113287 0.1141244360464875 -0.002461287434338687 0.6624035917783612;
             ]
 
-            @test OpticalInterface(Curvature(1/2.0, 1/3.0; φ=π/6), n, incidence).rtm ≈ SA[
+            @test get_transfer_matrix(OpticalInterface(
+                Curvature(1/2.0, 1/3.0; φ=π/6),
+                n,
+                incidence,
+            )) ≈ SA[
                 1.002149867536771 0.0037236798032304766 0.0 0.0;
                 0.0037236798032305035 1.0064496026103134 0.0 0.0;
                 0.15543228455938418 0.026032342106687215 0.6652456417038981 -0.002461287434338719;
@@ -306,44 +315,44 @@ using StaticArrays
             lens_refractive_index = 1.5108
             beam =
                 FreeSpace(250e-3 - lens_thickness) *
-                ThickLens(
-                    Curvature(1/(-lens_curvature), 0; φ=deg2rad(0)),
-                    lens_thickness,
-                    Curvature(),
-                    lens_refractive_index, # Schott N-BK7 at 800nm
-                    IncidenceAngle(ι=deg2rad(10), θ=deg2rad(0)),
-                ) *
-                FreeSpace(100e-3 - lens_thickness) *
-                ThickLens(
-                    Curvature(1/(-lens_curvature), 0; φ=deg2rad(45)),
-                    lens_thickness,
-                    Curvature(),
-                    lens_refractive_index, # Schott N-BK7 at 800nm
-                    IncidenceAngle(ι=deg2rad(10), θ=deg2rad(45)),
-                ) *
-                FreeSpace(100e-3) *
-                Beam(800e-9; wx=10e-3, wy=10e-3, rx=Inf, ry=Inf, φ=0.0)
-            @test radius(beam).y≈7.235348837209305e-3 rtol=0.02 skip=false
-            @test radius(beam).x≈5.3600000000000065e-3 rtol=0.02 skip=false
+                    ThickLens(
+                        Curvature(1/(-lens_curvature), 0; φ=deg2rad(0)),
+                        lens_thickness,
+                        Curvature(),
+                        lens_refractive_index, # Schott N-BK7 at 800nm
+                        IncidenceAngle(ι=deg2rad(10), θ=deg2rad(0)),
+                    ) *
+                    FreeSpace(100e-3 - lens_thickness) *
+                    ThickLens(
+                        Curvature(1/(-lens_curvature), 0; φ=deg2rad(45)),
+                        lens_thickness,
+                        Curvature(),
+                        lens_refractive_index, # Schott N-BK7 at 800nm
+                        IncidenceAngle(ι=deg2rad(10), θ=deg2rad(45)),
+                    ) *
+                    FreeSpace(100e-3) *
+                    Beam(800e-9; wx=10e-3, wy=10e-3, rx=Inf, ry=Inf, φ=0.0)
+            @test radius(beam).y ≈ 7.235348837209305e-3 rtol=0.02 skip=false
+            @test radius(beam).x ≈ 5.3600000000000065e-3 rtol=0.02 skip=false
 
             beam_p100 = FreeSpace(100e-3) * beam
-            @test radius(beam_p100).x≈10.973023255813956e-3 rtol=0.02 skip=false
-            @test radius(beam_p100).y≈5.5944186046511675e-3 rtol=0.02 skip=false
+            @test radius(beam_p100).x ≈ 10.973023255813956e-3 rtol=0.02 skip=false
+            @test radius(beam_p100).y ≈ 5.5944186046511675e-3 rtol=0.02 skip=false
 
             beam_p200 = FreeSpace(200e-3) * beam
-            @test radius(beam_p200).x≈16.039069767441863e-3 rtol=0.02 skip=false
-            @test radius(beam_p200).y≈4.539534883720936e-3 rtol=0.02 skip=true
+            @test radius(beam_p200).x ≈ 16.039069767441863e-3 rtol=0.02 skip=false
+            @test radius(beam_p200).y ≈ 4.539534883720936e-3 rtol=0.02 skip=true
 
             beam_m100 = FreeSpace(-100e-3) * beam
-            @test radius(beam_m100).y≈8.081860465116284e-3 rtol=0.02 skip=false
-            @test radius(beam_m100).x≈0.5544186046511648e-3 rtol=0.02 skip=true
+            @test radius(beam_m100).y ≈ 8.081860465116284e-3 rtol=0.02 skip=false
+            @test radius(beam_m100).x ≈ 0.5544186046511648e-3 rtol=0.02 skip=true
 
             beam_m200 = FreeSpace(-200e-3) * beam
-            @test radius(beam_m200).y≈9.293023255813958e-3 rtol=0.02 skip=false
-            @test radius(beam_m200).x≈4.4093023255814e-3 rtol=0.02 skip=false
+            @test radius(beam_m200).y ≈ 9.293023255813958e-3 rtol=0.02 skip=false
+            @test radius(beam_m200).x ≈ 4.4093023255814e-3 rtol=0.02 skip=false
 
             beam_waist = FreeSpace(-112e-3) * beam
-            @test radius(beam_waist).x≈0.0 atol=0.000001 skip=true
+            @test radius(beam_waist).x ≈ 0.0 atol=0.000001 skip=true
 
             # @info "" rms=sqrt(
             #     mapreduce(
@@ -371,21 +380,21 @@ using StaticArrays
             lens_refractive_index = 1.5108
             beam =
                 FreeSpace(250e-3 - lens_thickness) *
-                FreeSpace(lens_thickness/1.5168) *
-                ThinLens(
-                    OpticalPower(1/0.30012, 0; φ=deg2rad(0));
-                    n=lens_refractive_index,
-                    incidence=IncidenceAngle(; ι=deg2rad(10), θ=deg2rad(0)),
-                ) *
-                FreeSpace(100e-3 - lens_thickness) *
-                FreeSpace(lens_thickness/1.5168) *
-                ThinLens(
-                    OpticalPower(1/0.30012, 0; φ=deg2rad(45));
-                    n=lens_refractive_index,
-                    incidence=IncidenceAngle(; ι=deg2rad(10), θ=deg2rad(45)),
-                ) *
-                FreeSpace(100e-3) *
-                Beam(800e-9; wx=10e-3, wy=10e-3, rx=Inf, ry=Inf, φ=0.0)
+                    FreeSpace(lens_thickness/1.5168) *
+                    ThinLens(
+                        OpticalPower(1/0.30012, 0; φ=deg2rad(0)),
+                        lens_refractive_index,
+                        IncidenceAngle(; ι=deg2rad(10), θ=deg2rad(0)),
+                    ) *
+                    FreeSpace(100e-3 - lens_thickness) *
+                    FreeSpace(lens_thickness/1.5168) *
+                    ThinLens(
+                        OpticalPower(1/0.30012, 0; φ=deg2rad(45)),
+                        lens_refractive_index,
+                        IncidenceAngle(; ι=deg2rad(10), θ=deg2rad(45)),
+                    ) *
+                    FreeSpace(100e-3) *
+                    Beam(800e-9; wx=10e-3, wy=10e-3, rx=Inf, ry=Inf, φ=0.0)
             @test radius(beam).x≈7.235348837209305e-3 rtol=0.01 skip=true
             @test radius(beam).y≈5.3600000000000065e-3 rtol=0.01 skip=true
 
@@ -429,38 +438,38 @@ using StaticArrays
         end
 
         @testset "ThinLens" begin
-            lens = ThinLens(Curvature(), Curvature()).rtm
-            @test lens ≈
-                  SA[1.0 0.0 0.0 0.0; 0.0 1.0 0.0 0.0; 0.0 0.0 1.0 0.0; 0.0 0.0 0.0 1.0;]
+            lens = ThinLens(Curvature(), Curvature(), 1.5)
+            @test get_transfer_matrix(lens) ≈
+                SA[1.0 0.0 0.0 0.0; 0.0 1.0 0.0 0.0; 0.0 0.0 1.0 0.0; 0.0 0.0 0.0 1.0;]
 
-            lens = ThinLens(Curvature(1.23), Curvature(1.23)).rtm
-            @test lens ≈
-                  SA[1.0 0.0 0.0 0.0; 0.0 1.0 0.0 0.0; 0.0 0.0 1.0 0.0; 0.0 0.0 0.0 1.0;]
+            lens = ThinLens(Curvature(1.23), Curvature(1.23), 1.5)
+            @test get_transfer_matrix(lens) ≈
+                SA[1.0 0.0 0.0 0.0; 0.0 1.0 0.0 0.0; 0.0 0.0 1.0 0.0; 0.0 0.0 0.0 1.0;]
 
-            lens = ThinLens(Curvature(-1.23), Curvature(-1.23)).rtm
-            @test lens ≈
-                  SA[1.0 0.0 0.0 0.0; 0.0 1.0 0.0 0.0; 0.0 0.0 1.0 0.0; 0.0 0.0 0.0 1.0;]
+            lens = ThinLens(Curvature(-1.23), Curvature(-1.23), 1.5)
+            @test get_transfer_matrix(lens) ≈
+                SA[1.0 0.0 0.0 0.0; 0.0 1.0 0.0 0.0; 0.0 0.0 1.0 0.0; 0.0 0.0 0.0 1.0;]
 
-            lens = ThinLens(OpticalPower()).rtm
-            @test lens ≈
-                  SA[1.0 0.0 0.0 0.0; 0.0 1.0 0.0 0.0; 0.0 0.0 1.0 0.0; 0.0 0.0 0.0 1.0;]
+            lens = ThinLens(OpticalPower())
+            @test get_transfer_matrix(lens) ≈
+                SA[1.0 0.0 0.0 0.0; 0.0 1.0 0.0 0.0; 0.0 0.0 1.0 0.0; 0.0 0.0 0.0 1.0;]
 
-            lens = ThinLens(OpticalPower(2.0, 3.0)).rtm
-            @test lens ≈
-                  SA[1.0 0.0 0.0 0.0; 0.0 1.0 0.0 0.0; -2.0 0.0 1.0 0.0; 0.0 -3.0 0.0 1.0;]
-
-            roc = 1.234
-            lens_a = ThinLens(OpticalPower((1.5 - 1) * (1/roc))).rtm
-            lens_b = ThinLens(Curvature(1/roc), Curvature()).rtm
-            @test lens_a ≈ lens_b
+            lens = ThinLens(OpticalPower(2.0, 3.0))
+            @test get_transfer_matrix(lens) ≈
+                SA[1.0 0.0 0.0 0.0; 0.0 1.0 0.0 0.0; -2.0 0.0 1.0 0.0; 0.0 -3.0 0.0 1.0;]
 
             roc = 1.234
-            lens_a = ThinLens(OpticalPower((2.0/1.5 - 1) * (1/roc)); n=2.0 / 1.5).rtm
-            lens_b = ThinLens(Curvature(1/roc), Curvature(); n=2.0 / 1.5).rtm
-            @test lens_a ≈ lens_b
+            lens_a = ThinLens(OpticalPower((1.5 - 1) * (1/roc)))
+            lens_b = ThinLens(Curvature(1/roc), Curvature(), 1.5)
+            @test get_transfer_matrix(lens_a) ≈ get_transfer_matrix(lens_b)
 
-            lens_b = ThinLens(Curvature(), Curvature(-1/roc); n=2.0 / 1.5).rtm
-            @test lens_a ≈ lens_b
+            roc = 1.234
+            lens_a = ThinLens(OpticalPower((2.0/1.5 - 1) * (1/roc)))
+            lens_b = ThinLens(Curvature(1/roc), Curvature(), 2.0 / 1.5)
+            @test get_transfer_matrix(lens_a) ≈ get_transfer_matrix(lens_b)
+
+            lens_b = ThinLens(Curvature(), Curvature(-1/roc), 2.0 / 1.5)
+            @test get_transfer_matrix(lens_a) ≈ get_transfer_matrix(lens_b)
         end
 
         @testset "ThickLens" begin
@@ -472,18 +481,18 @@ using StaticArrays
             ]
             n = 1.5
 
-            lens = ThickLens(Curvature(), 0, Curvature(), n).rtm
-            @test lens ≈ unit_matrix rtol = 1e-5
+            lens = ThickLens(Curvature(), 0, Curvature(), n)
+            @test get_transfer_matrix(lens) ≈ unit_matrix rtol = 1e-5
 
-            lens = ThickLens(Curvature(1.23), 0, Curvature(1.23), n).rtm
-            @test lens ≈ unit_matrix rtol = 1e-5
+            lens = ThickLens(Curvature(1.23), 0, Curvature(1.23), n)
+            @test get_transfer_matrix(lens) ≈ unit_matrix rtol = 1e-5
 
-            lens = ThickLens(Curvature(-1.23), 0, Curvature(-1.23), n).rtm
-            @test lens ≈ unit_matrix rtol = 1e-5
+            lens = ThickLens(Curvature(-1.23), 0, Curvature(-1.23), n)
+            @test get_transfer_matrix(lens) ≈ unit_matrix rtol = 1e-5
 
-            lens = ThickLens(Curvature(), 1.23, Curvature(), n).rtm
-            dist = FreeSpace(1.23 / n).rtm
-            @test lens ≈ dist rtol = 1e-5
+            lens = ThickLens(Curvature(), 1.23, Curvature(), n)
+            dist = FreeSpace(1.23 / n)
+            @test get_transfer_matrix(lens) ≈ get_transfer_matrix(dist) rtol = 1e-5
         end
 
         @testset "ThinLens vs Thicklens" begin
@@ -505,9 +514,10 @@ using StaticArrays
                 )
                 thin_front =
                     FreeSpace(lens_thickness/n) *
-                    ThinLens(OpticalPower((n-1)/lens_curvature, 0); n)
+                        ThinLens(OpticalPower((n-1)/lens_curvature, 0))
 
-                @test thin_front.rtm ≈ thick_front.rtm rtol = 0.00001
+                @test get_transfer_matrix(thin_front) ≈ get_transfer_matrix(thick_front) rtol =
+                    0.00001
 
                 thick_back = ThickLens(
                     Curvature(),
@@ -516,10 +526,11 @@ using StaticArrays
                     n,
                 )
                 thin_back =
-                    ThinLens(OpticalPower((n-1)/lens_curvature, 0.0); n) *
-                    FreeSpace(lens_thickness/n)
+                    ThinLens(OpticalPower((n-1)/lens_curvature, 0.0)) *
+                        FreeSpace(lens_thickness/n)
 
-                @test thin_back.rtm ≈ thick_back.rtm rtol = 0.00001
+                @test get_transfer_matrix(thin_back) ≈ get_transfer_matrix(thick_back) rtol =
+                    0.00001
             end
 
             @testset "Zero indcidence angle" begin
@@ -531,9 +542,10 @@ using StaticArrays
                 )
                 thin_front =
                     FreeSpace(lens_thickness/lens_refractive_index) *
-                    ThinLens(OpticalPower(1/lens_focal_length, 0))
+                        ThinLens(OpticalPower(1/lens_focal_length, 0))
 
-                @test thin_front.rtm ≈ thick_front.rtm rtol = 0.00002
+                @test get_transfer_matrix(thin_front) ≈ get_transfer_matrix(thick_front) rtol =
+                    0.00002
 
                 thick_back = ThickLens(
                     Curvature(),
@@ -543,11 +555,13 @@ using StaticArrays
                 )
                 thin_back =
                     ThinLens(
-                        OpticalPower(1/lens_focal_length, 0);
-                        incidence=IncidenceAngle(; ι=0, θ=0),
+                        OpticalPower(1/lens_focal_length, 0),
+                        1.5,
+                        IncidenceAngle(; ι=0, θ=0),
                     ) * FreeSpace(lens_thickness/lens_refractive_index)
 
-                @test thin_back.rtm ≈ thick_back.rtm rtol = 0.00002
+                @test get_transfer_matrix(thin_back) ≈ get_transfer_matrix(thick_back) rtol =
+                    0.00002
             end
 
             @testset "Non-zero indcidence angle" begin
@@ -565,12 +579,12 @@ using StaticArrays
                 )
                 thin_front =
                     FreeSpace(lens_thickness/lens_refractive_index) * ThinLens(
-                        OpticalPower(1/lens_focal_length, 0; φ);
-                        n=lens_refractive_index, # Schott N-BK7 at 800nm
-                        incidence=IncidenceAngle(; ι, θ),
+                        OpticalPower(1/lens_focal_length, 0; φ),
+                        lens_refractive_index, # Schott N-BK7 at 800nm
+                        IncidenceAngle(; ι, θ),
                     )
 
-                @test thin_front.rtm≈thick_front.rtm rtol=0.001 atol=1e-10
+                @test get_transfer_matrix(thin_front) ≈ get_transfer_matrix(thick_front) rtol=0.001 atol=1e-10
 
                 thick_back = ThickLens(
                     Curvature(),
@@ -581,11 +595,12 @@ using StaticArrays
                 )
                 thin_back =
                     ThinLens(
-                        OpticalPower(1/lens_focal_length, 0);
-                        incidence=IncidenceAngle(; ι, θ=deg2rad(45)),
+                        OpticalPower(1/lens_focal_length, 0),
+                        1.5,
+                        IncidenceAngle(; ι, θ=deg2rad(45)),
                     ) * FreeSpace(lens_thickness/lens_refractive_index)
 
-                @test thin_back.rtm≈thick_back.rtm rtol=0.001 atol=1e-10
+                @test get_transfer_matrix(thin_back) ≈ get_transfer_matrix(thick_back) rtol=0.001 atol=1e-10
             end
         end
     end

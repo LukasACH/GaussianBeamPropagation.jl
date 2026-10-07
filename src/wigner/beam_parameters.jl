@@ -9,8 +9,12 @@ It follows the definition of ISO 11146 for `x`, `y`, and the angle `φ`.
 
 It uses a right-handed coordinate system.
 """
-radius(beam::Beam{F,SecondOrderMoments{F}}) where {F} = radius(beam.inner)
-radius(beam::Beam{F}) where {F} = radius(Beam{F,SecondOrderMoments{F}}(beam).inner)
+radius(beam::Beam{F,SecondOrderMoments{G}}) where {F,G} = radius(beam.inner)
+radius(beam::Beam{F,TMatrix{G}}) where {F,G} = radius(Beam{F,SecondOrderMoments{G}}(beam).inner)
+
+
+radius(beam::Beam{F,SecondOrderMoments{G}}, φ::Real) where {F,G} = radius(beam.inner, φ)
+radius(beam::Beam{F}, φ::Real) where {F} = radius(Beam{F,SecondOrderMoments{F}}(beam).inner, φ)
 
 """
     divergence(::Beam)
@@ -48,11 +52,24 @@ The return value is a single `Float64` in units of metres²/radians².
 twist(beam::Beam{F,SecondOrderMoments{F}}) where {F} = twist(beam.inner)
 twist(beam::Beam{F}) where {F} = twist(Beam{F,SecondOrderMoments{F}}(beam).inner)
 
-function radius(som::SecondOrderMoments)::NamedTuple{(:x, :y, :φ),NTuple{3,Float64}}
+function radius(som::SecondOrderMoments{F})::NamedTuple{(:x, :y, :φ),Tuple{F,F,F}} where {F}
     return radius(som.rxrx, som.rxry, som.ryry)
 end
 
-function radius(xx, xy, yy)::NamedTuple{(:x, :y, :φ),NTuple{3,Float64}}
+function radius(som::SecondOrderMoments{F}, φ::Real)::NamedTuple{(:x, :y),Tuple{F,F}} where {F}
+    return radius(som.rxrx, som.rxry, som.ryry, φ)
+end
+
+function radius(xx::F, xy::F, yy::F, φ0::Real)::NamedTuple{(:x, :y),Tuple{F,F}} where {F}
+    x, y, φ = radius(xx, xy, yy)
+
+    xn = x * cos(φ0 - φ)^2 + y * sin(φ0 - φ)^2
+    yn = x * sin(φ0 - φ)^2 + y * cos(φ0 - φ)^2
+
+    return (xn, yn)
+end
+
+function radius(xx::F, xy::F, yy::F)::NamedTuple{(:x, :y, :φ),Tuple{F,F,F}} where {F}
     diff_xx_yy = ifelse(xx ≈ yy, 0.0, xx-yy)
 
     a = xx + yy

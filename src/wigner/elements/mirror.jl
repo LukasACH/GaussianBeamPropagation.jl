@@ -1,67 +1,55 @@
 """
-    Mirror(surface::Curvature; incidence::IncidenceAngle)
-    Mirror(power::OpticalPower; incidence::IncidenceAngle)
+    Mirror(surface::Curvature)
+    Mirror(surface::Curvature, incidence::IncidenceAngle)
+    Mirror(power::OpticalPower)
+    Mirror(power::OpticalPower, incidence::IncidenceAngle)
 
 Matrix representing a mirror with surface curvature `surface` or an optical power of `power`. The incident direction of
 the beam is given by the optional parameter `incidence`.
 """
-struct Mirror{T} <: AbstractElement
+struct Mirror{T<:AbstractFloat} <: AbstractElement
     surface::Curvature{T}
     incidence::IncidenceAngle{T}
 
-    rtm::SMatrix{4,4,T,16}
-
-    function Mirror(surface::Curvature; incidence::IncidenceAngle=IncidenceAngle())
-        κxx, κxy, κyy = rotate3(surface.xx, surface.xy, surface.yy, -incidence.θ)
-
-        Mxx, Mxy, Myy = rotate3(
-            κxx / 2 * sec(incidence.ι), κxy / 2, κyy / 2 * cos(incidence.ι), incidence.θ,
-        )
-
-        R = typeof(Mxx)
-
-        rtm = SA{R}[
-            1.0 0.0 0.0 0.0;
-            0.0 1.0 0.0 0.0;
-            Mxx Mxy 1.0 0.0;
-            Mxy Myy 0.0 1.0;
-        ]
-
-        return new{R}(surface, incidence, rtm)
+    function Mirror(
+        surface::Curvature{A},
+        incidence::IncidenceAngle{B}=IncidenceAngle(),
+    ) where {A<:Real,B<:Real}
+        return new{promote_type(A, B)}(surface, incidence)
     end
 end
 
-function Mirror(power::OpticalPower; kwargs...)
-    return Mirror(Curvature(-2power.xx, -2power.xy, -2power.yy); kwargs...)
+function Mirror(power::OpticalPower, args...)
+    return Mirror(Curvature(-2power.xx, -2power.xy, -2power.yy), args...)
 end
 
-# """
-#     Mirror(D::Real; ι::Real=0.0, θ::Real=0.0)
+function get_transfer_matrix(e::Mirror{T})::SMatrix{4,4,T,16} where {T}
+    κxx, κxy, κyy = rotate3(e.surface.xx, e.surface.xy, e.surface.yy, -e.incidence.θ)
 
-# Matrix representing a mirror with focal power `D` in both principal axes. The
-# beam is incident on the surface by `ι`, and the incidence plane is rotated by
-# `θ` w.r.t. the beam coordinate system.
-# """
-# function Mirror(D::Real; ι::Real=0.0, θ::Real=0.0)
-#     return Mirror(D, D; ι, θ)
-# end
+    Mxx, Mxy, Myy = rotate3(
+        κxx / 2 * sec(e.incidence.ι),
+        κxy / 2,
+        κyy / 2 * cos(e.incidence.ι),
+        e.incidence.θ,
+    )
 
-# function Mirror(Dx::Real, Dy::Real; φ::Real=0.0, ι::Real=0.0, θ::Real=0.0)
-#     Mirror(FocalPower(Dx, Dy; φ); ia=IncidenceAngle(ι, θ))
-# end
+    return SA{T}[
+        1.0 0.0 0.0 0.0;
+        0.0 1.0 0.0 0.0;
+        Mxx Mxy 1.0 0.0;
+        Mxy Myy 0.0 1.0;
+    ]
+end
 
-# function Mirror(
-#     surface::Union{FocalPower,FocalLength,RadiusOfCurvature}, ia::IncidenceAngle
-# )
-#     Mirror(surface; ia)
-# end
-
-# function Mirror(surface::FocalLength; ia::IncidenceAngle=IncidenceAngle())
-#     Mirror(FocalPower(surface); ia)
-# end
-
-# function Mirror(
-#     surface::RadiusOfCurvature{T}; ia::IncidenceAngle=IncidenceAngle()
-# ) where {T}
-#     Mirror(FocalPower{T}(2*surface.Ra_inv, 2*surface.Ra_inv, 2*surface.Ra_inv); ia)
-# end
+function Base.getproperty(e::Mirror, s::Symbol, args...)
+    if s==:rtm
+        Base.depwarn(
+            "Accessing field rtm of Mirror directly is deprecated. Use get_transfer_matrix instead!",
+            :getproperty,
+        )
+        return get_transfer_matrix(e)
+    else
+        return getfield(e, s, args...)
+        # throw(FieldError(typeof(e), s))
+    end
+end

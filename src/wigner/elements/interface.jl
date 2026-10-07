@@ -17,40 +17,55 @@ The arguments are the following:
     The coordinate system used by the matrix is right handed, where the ray or beam travels in the +z direction.
     Both the orientation angle of the surface and the orientation of the incidence plane are rotations in the x-y-plane relative to the x̂ direction.
 """
-struct OpticalInterface{T} <: AbstractElement
+struct OpticalInterface{T<:Real} <: AbstractElement
     n::T
     surface::Curvature{T}
     incidence::IncidenceAngle{T}
 
-    rtm::SMatrix{4,4,T,16}
+    function OpticalInterface(
+        surface::Curvature{A},
+        n::B,
+        incidence::IncidenceAngle{C}=IncidenceAngle(),
+    ) where {A<:Real,B<:Real,C<:Real}
+        return new{promote_type(A, B, C)}(n, surface, incidence)
+    end
+end
 
-    function OpticalInterface(surface::Curvature, n::Real, incidence=IncidenceAngle())
-        κxx, κxy, κyy = rotate3(surface.xx, surface.xy, surface.yy, -incidence.θ)
+function get_transfer_matrix(e::OpticalInterface{T})::SMatrix{4,4,T,16} where {T}
+    κxx, κxy, κyy = rotate3(e.surface.xx, e.surface.xy, e.surface.yy, -e.incidence.θ)
 
-        V = sqrt(n^2 - sin(incidence.ι)^2)
+    V = sqrt(e.n^2 - sin(e.incidence.ι)^2)
 
-        Axx, Axy, Ayy = rotate2(V / cos(incidence.ι) / n, 1.0f0, incidence.θ)
-        Dxx, Dxy, Dyy = rotate2(cos(incidence.ι) / V, 1 / n, incidence.θ)
-        Mxx, Mxy, Myx, Myy = rotate4(
-            κxx * (V - cos(incidence.ι)) / V / cos(incidence.ι),
-            κxy * (V - cos(incidence.ι)) / V,
-            κxy * (V - cos(incidence.ι)) / cos(incidence.ι) / n,
-            κyy * (V - cos(incidence.ι)) / n,
-            incidence.θ,
+    Axx, Axy, Ayy = rotate2(V / cos(e.incidence.ι) / e.n, 1, e.incidence.θ)
+    Dxx, Dxy, Dyy = rotate2(cos(e.incidence.ι) / V, 1 / e.n, e.incidence.θ)
+    Mxx, Mxy, Myx, Myy = rotate4(
+        κxx * (V - cos(e.incidence.ι)) / V / cos(e.incidence.ι),
+        κxy * (V - cos(e.incidence.ι)) / V,
+        κxy * (V - cos(e.incidence.ι)) / cos(e.incidence.ι) / e.n,
+        κyy * (V - cos(e.incidence.ι)) / e.n,
+        e.incidence.θ,
+    )
+
+    Axx, Ayy, Axy, Dxx, Dyy, Dxy, Mxx, Mxy, Myx, Myy =
+        promote(Axx, Ayy, Axy, Dxx, Dyy, Dxy, Mxx, Mxy, Myx, Myy)
+
+    return SA{T}[
+        Axx Axy 0.0 0.0
+        Axy Ayy 0.0 0.0
+        Mxx Mxy Dxx Dxy
+        Myx Myy Dxy Dyy
+    ]
+end
+
+function Base.getproperty(e::OpticalInterface, s::Symbol, args...)
+    if s==:rtm
+        Base.depwarn(
+            "Accessing field rtm of OpticalInterface directly is deprecated. Use get_transfer_matrix instead!",
+            :getproperty,
         )
-
-        Axx, Ayy, Axy, Dxx, Dyy, Dxy, Mxx, Mxy, Myx, Myy =
-            promote(Axx, Ayy, Axy, Dxx, Dyy, Dxy, Mxx, Mxy, Myx, Myy)
-
-        R = typeof(Axx)
-
-        rtm = SA{R}[
-            Axx Axy 0.0 0.0
-            Axy Ayy 0.0 0.0
-            Mxx Mxy Dxx Dxy
-            Myx Myy Dxy Dyy
-        ]
-
-        return new{R}(n, surface, incidence, rtm)
+        return get_transfer_matrix(e)
+    else
+        return getfield(e, s, args...)
+        # throw(FieldError(typeof(e), s))
     end
 end

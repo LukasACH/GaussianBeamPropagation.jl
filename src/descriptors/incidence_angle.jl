@@ -25,5 +25,6 @@ function Base.convert(::Type{IncidenceAngle{T}}, x::IncidenceAngle) where {T<:Re
     return IncidenceAngle{T}(x)
 end
 
-IncidenceAngle{T}(x::IncidenceAngle) where {T} =
-    IncidenceAngle{T}(x.ι, x.θ)
+IncidenceAngle{T}(x::IncidenceAngle) where {T} = IncidenceAngle{T}(x.ι, x.θ)
+
+IncidenceAngle{T}() where {T} = IncidenceAngle{T}(0, 0)

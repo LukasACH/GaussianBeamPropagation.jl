@@ -6,7 +6,8 @@ struct OpticalAssembly{T<:AbstractFloat}
 end
 
 function Base.:*(
-    lhs::OpticalAssembly{L}, rhs::OpticalAssembly{R},
+    lhs::OpticalAssembly{L},
+    rhs::OpticalAssembly{R},
 ) where {L<::AbstractFloat,R<:AbstractFloat}
     T = promote_type(L, R)
     return OpticalAssembly{T}(
