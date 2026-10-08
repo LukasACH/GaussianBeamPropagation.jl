@@ -1,6 +1,7 @@
-function Base.:*(M::AbstractElement, beam::Beam{F,TMatrix{F}}) where {F}
+function Base.:*(M::AbstractElement, beam::Beam)
     M_rtm=get_transfer_matrix(M)
-    return Beam(beam.λ, M_rtm * beam.inner * M_rtm')
+    beam_matrix = generate_wigner_matrix(beam.inner)
+    return Beam(beam.λ, M_rtm * beam_matrix * M_rtm')
 end
 
 Base.:*(M::AbstractElement, beam::Beam{F}) where {F} = M * Beam{F,TMatrix{F}}(beam)
