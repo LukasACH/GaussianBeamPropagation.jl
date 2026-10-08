@@ -7,14 +7,12 @@ Calculates the 1/e² radius from a `Beam`, `SecondOrderMoments` or measured seco
 The return value is a `NamedTuple` with entries `(:x, :y, :φ)`, where both _x_ and _y_ are given in metres, and the angle _φ_ is given in radians.
 It follows the definition of ISO 11146 for `x`, `y`, and the angle `φ`.
 
+If the optional argument `φ` is provided, the radius is calculated along the direction of the angle `φ` (in radians). The return value is a `NamedTuple` with entries `(:x, :y)`, where both _x_ and _y_ are given in metres.
+
 It uses a right-handed coordinate system.
 """
-radius(beam::Beam{F,SecondOrderMoments{G}}) where {F,G} = radius(beam.inner)
-radius(beam::Beam{F,TMatrix{G}}) where {F,G} = radius(Beam{F,SecondOrderMoments{G}}(beam).inner)
-
-
-radius(beam::Beam{F,SecondOrderMoments{G}}, φ::Real) where {F,G} = radius(beam.inner, φ)
-radius(beam::Beam{F}, φ::Real) where {F} = radius(Beam{F,SecondOrderMoments{F}}(beam).inner, φ)
+radius(beam::Beam) = radius(beam.inner)
+radius(beam::Beam, φ::Real) = radius(beam.inner, φ)
 
 """
     divergence(::Beam)
@@ -25,8 +23,7 @@ The return value is a `NamedTuple` with entries `(:x, :y, :φ)`, where both _x_ 
 
 It uses a right-handed coordinate system.
 """
-divergence(beam::Beam{F,SecondOrderMoments{F}}) where {F} = divergence(beam.inner)
-divergence(beam::Beam{F}) where {F} = divergence(Beam{F,SecondOrderMoments{F}}(beam).inner)
+divergence(beam::Beam) = divergence(beam.inner)
 
 """
     phase_curvature(::Beam)
@@ -37,10 +34,7 @@ The return value is a `NamedTuple` with entries `(:x, :y, :φ)`, where both _x_ 
 
 It uses a right-handed coordinate system.
 """
-phase_curvature(beam::Beam{F,SecondOrderMoments{F}}) where {F} = phase_curvature(beam.inner)
-function phase_curvature(beam::Beam{F}) where {F}
-    return phase_curvature(Beam{F,SecondOrderMoments{F}}(beam).inner)
-end
+phase_curvature(beam::Beam) = phase_curvature(beam.inner)
 
 """
     twist(::Beam)
@@ -49,8 +43,8 @@ end
 Calculates the twist from a `Beam` or `SecondOrderMoments`.
 The return value is a single `Float64` in units of metres²/radians².
 """
-twist(beam::Beam{F,SecondOrderMoments{F}}) where {F} = twist(beam.inner)
-twist(beam::Beam{F}) where {F} = twist(Beam{F,SecondOrderMoments{F}}(beam).inner)
+twist(beam::Beam) = twist(beam.inner)
+
 
 function radius(som::SecondOrderMoments{F})::NamedTuple{(:x, :y, :φ),Tuple{F,F,F}} where {F}
     return radius(som.rxrx, som.rxry, som.ryry)
