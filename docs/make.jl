@@ -14,4 +14,4 @@ makedocs(;
     ],
 )
 
-# deploydocs(; repo="github.com/LukasACH/GaussianBeamPropagation.jl.git")
+deploydocs(; repo="github.com/LukasACH/GaussianBeamPropagation.jl.git")
