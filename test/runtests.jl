@@ -1,8 +1,11 @@
 using Test
 using GaussianBeamPropagation
+using Documenter
 using StaticArrays
 
 @testset verbose = true "GaussianBeamPropagation.jl" begin
+    doctest(GaussianBeamPropagation)
+
     @testset "Utils" begin
         using GaussianBeamPropagation: rotate2, rotate3, rotate4, get_x_y_φ
 

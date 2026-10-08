@@ -1,56 +1,11 @@
-# Example.jl Documentation
+# GaussianBeamPropagation.jl
 
-```@repl
-using GaussianBeamPropagation
-using Unitful # optional, but enables the use of the @u_str macros
-λ = 1030u"nm"
-w0_in = 2.75u"mm"
-beam_in = Beam(λ;
-    wx=w0_in,
-    wy=w0_in,
-    rx=Inf * u"m",
-    ry=Inf * u"m",
-)
-M = FreeSpace(0.5) *
-        ThinLens(OpticalPower(1 / 0.5)) *
-        FreeSpace(0.5)
-beam_out = M * beam_in
-radius(beam_out)
-phase_curvature(beam_out)
-```
+!!! warning
 
-```@docs
-AbstractElement
-```
+    This package is very much a work in progress.
+    The final API is not stable yet, and may change drastically over time until I am happy with at and stabilise it with a 1.0 release.
 
-```@docs
-FreeSpace
-```
+The goal of this package is to provide a framework to propagate Gaussian beams, e.g., Gaussian laser beams, through an optical system supporting general astigmatism.
+It focusses on a fast propagation over perfect accuracy to enable numerical optimisation strategies to, e.g., minimise astigmatism in optical systems.
 
-```@docs
-MatrixElement
-```
-
-```@docs
-Mirror
-```
-
-```@docs
-OpticalInterface
-```
-
-```@docs
-ThinLens
-```
-
-```@docs
-ThickLens
-```
-
-```@docs
-Curvature
-```
-
-```@docs
-IncidenceAngle
-```
+It implements extended ABCD matrices used with the [ray transfer matrix analysis](https://en.wikipedia.org/wiki/Ray_transfer_matrix_analysis) that supports both [non-rotationally symmetric elements and third-order/oblique astigmatism](https://en.wikipedia.org/wiki/Astigmatism_optical_systems#Forms_of_astigmatism).
