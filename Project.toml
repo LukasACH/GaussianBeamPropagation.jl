@@ -1,7 +1,10 @@
 name = "GaussianBeamPropagation"
-uuid = "889ABB49-4AC3-45B8-8760-419A35A1F3CA"
+uuid = "889abb49-4ac3-45b8-8760-419a35a1f3ca"
 version = "0.1.0"
 authors = ["LukasACH <git@lukasach.dev>"]
+
+[workspace]
+projects = ["docs"]
 
 [deps]
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
@@ -18,11 +21,8 @@ Test = "1.11.0"
 Unitful = "1.28.0"
 
 [extras]
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
 test = ["Test", "Unitful", "Documenter"]
-
-[workspace]
-projects = ["docs"]
