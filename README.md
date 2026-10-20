@@ -65,10 +65,16 @@ julia> beam_out = M * beam_in
 Beam{Float64, StaticArraysCore.SMatrix{4, 4, Float64, 16}}(1.03e-6, [8.883606919517038e-10 0.0 0.0 0.0; 0.0 8.883606919517038e-10 0.0 0.0; 0.0 0.0 7.5625e-6 0.0; 0.0 0.0 0.0 7.5625e-6])
 
 julia> radius(beam_out)
-(x = 5.961076050350989e-5, y = 5.961076050350989e-5, φ = 0.0)
+3-element SVector{3, Float64} with indices SOneTo(3):
+ 5.961076050350989e-5
+ 5.961076050350989e-5
+ 0.0
 
 julia> phase_curvature(beam_out)
-(x = -Inf, y = -Inf, φ = 0.0)
+3-element SVector{3, Float64} with indices SOneTo(3):
+ -Inf
+ -Inf
+  0.0
 ```
 
 ## To-Dos
