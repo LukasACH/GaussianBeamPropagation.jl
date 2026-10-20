@@ -115,9 +115,9 @@ using StaticArrays
                 beam = Beam(λ; wx, wy, rx=Inf, ry=Inf, φ=φ)
                 calc_radius = radius(beam)
                 set_M, set_m = minmax(wx, wy)
-                calc_M, calc_m = minmax(calc_radius.x, calc_radius.y)
+                calc_M, calc_m = minmax(calc_radius[1], calc_radius[2])
                 set_φ = mod2pi(2φ + π * (wx < wy)) / 2
-                calc_φ = mod2pi(2calc_radius.φ + π * (calc_radius.x < calc_radius.y)) / 2
+                calc_φ = mod2pi(2calc_radius[3] + π * (calc_radius[1] < calc_radius[2])) / 2
                 @test calc_M ≈ set_M
                 @test calc_m ≈ set_m
                 @test calc_φ ≈ set_φ
@@ -127,64 +127,48 @@ using StaticArrays
                 @testset "Normal 1" begin
                     radius_ =
                         radius(Beam(λ; wx=2e-3, wy=4e-3, rx=Inf, ry=Inf, φ=deg2rad(30)),)
-                    @test radius_.x ≈ 2e-3
-                    @test radius_.y ≈ 4e-3
-                    @test radius_.φ ≈ deg2rad(30)
+                    @test radius_ ≈ [2e-3, 4e-3, deg2rad(30)]
                 end
 
                 @testset "Normal 2" begin
                     radius_ =
                         radius(Beam(λ; wx=2e-3, wy=4e-3, rx=Inf, ry=Inf, φ=deg2rad(-15)),)
-                    @test radius_.x ≈ 2e-3
-                    @test radius_.y ≈ 4e-3
-                    @test radius_.φ ≈ deg2rad(-15)
+                    @test radius_ ≈ [2e-3, 4e-3, deg2rad(-15)]
                 end
                 @testset "Normal 3" begin
                     radius_ =
                         radius(Beam(λ; wx=4e-3, wy=2e-3, rx=Inf, ry=Inf, φ=deg2rad(15)),)
-                    @test radius_.x ≈ 4e-3
-                    @test radius_.y ≈ 2e-3
-                    @test radius_.φ ≈ deg2rad(15)
+                    @test radius_ ≈ [4e-3, 2e-3, deg2rad(15)]
                 end
 
                 @testset "Normal 4" begin
                     radius_ =
                         radius(Beam(λ; wx=4e-3, wy=2e-3, rx=Inf, ry=Inf, φ=deg2rad(-30)),)
-                    @test radius_.x ≈ 4e-3
-                    @test radius_.y ≈ 2e-3
-                    @test radius_.φ ≈ deg2rad(-30)
+                    @test radius_ ≈ [4e-3, 2e-3, deg2rad(-30)]
                 end
 
                 @testset "45°, swapping x and y" begin
                     radius_ =
                         radius(Beam(λ; wx=2e-3, wy=4e-3, rx=Inf, ry=Inf, φ=deg2rad(45)),)
-                    @test radius_.x ≈ 4e-3
-                    @test radius_.y ≈ 2e-3
-                    @test radius_.φ ≈ deg2rad(-45)
+                    @test radius_ ≈ [4e-3, 2e-3, deg2rad(-45)]
                 end
 
                 @testset "-45°, swapping x and y" begin
                     radius_ =
                         radius(Beam(λ; wx=2e-3, wy=4e-3, rx=Inf, ry=Inf, φ=deg2rad(-45)),)
-                    @test radius_.x ≈ 4e-3
-                    @test radius_.y ≈ 2e-3
-                    @test radius_.φ ≈ deg2rad(45)
+                    @test radius_ ≈ [4e-3, 2e-3, deg2rad(45)]
                 end
 
                 @testset "45°, not swapping x and y" begin
                     radius_ =
                         radius(Beam(λ; wx=4e-3, wy=2e-3, rx=Inf, ry=Inf, φ=deg2rad(45)),)
-                    @test radius_.x ≈ 4e-3
-                    @test radius_.y ≈ 2e-3
-                    @test radius_.φ ≈ deg2rad(45)
+                    @test radius_ ≈ [4e-3, 2e-3, deg2rad(45)]
                 end
 
                 @testset "-45°, not swapping x and y" begin
                     radius_ =
                         radius(Beam(λ; wx=4e-3, wy=2e-3, rx=Inf, ry=Inf, φ=deg2rad(-45)),)
-                    @test radius_.x ≈ 4e-3
-                    @test radius_.y ≈ 2e-3
-                    @test radius_.φ ≈ deg2rad(-45)
+                    @test radius_ ≈ [4e-3, 2e-3, deg2rad(-45)]
                 end
             end
         end
@@ -199,7 +183,7 @@ using StaticArrays
                         Mirror(power, incidence) *
                         Beam(λ; wx=1e-3, wy=1e-3, rx=Inf, ry=Inf, φ=deg2rad(0))
 
-                @test radius(beam_out).φ ≈ deg2rad(0)
+                @test radius(beam_out)[3] ≈ deg2rad(0)
             end
 
             @testset "Incidence angle" begin
@@ -211,7 +195,7 @@ using StaticArrays
                         Mirror(power, incidence) *
                         Beam(λ; wx=1e-3, wy=1e-3, rx=Inf, ry=Inf, φ=deg2rad(0))
 
-                @test radius(beam_out).φ ≈ deg2rad(-20)
+                @test radius(beam_out)[3] ≈ deg2rad(-20)
             end
             @testset "Toric mirror" begin
                 λ = 632.8e-9
@@ -223,7 +207,7 @@ using StaticArrays
                         Mirror(power, incidence) *
                         Beam(λ; wx=1e-3, wy=1e-3, rx=Inf, ry=Inf, φ=deg2rad(0))
 
-                @test radius(beam_out).φ ≈ deg2rad(10)
+                @test radius(beam_out)[3] ≈ deg2rad(10)
             end
         end
 
@@ -335,43 +319,43 @@ using StaticArrays
                     ) *
                     FreeSpace(100e-3) *
                     Beam(800e-9; wx=10e-3, wy=10e-3, rx=Inf, ry=Inf, φ=0.0)
-            @test radius(beam).y ≈ 7.235348837209305e-3 rtol=0.02 skip=false
-            @test radius(beam).x ≈ 5.3600000000000065e-3 rtol=0.02 skip=false
+            @test radius(beam)[2] ≈ 7.235348837209305e-3 rtol=0.02 skip=false
+            @test radius(beam)[1] ≈ 5.3600000000000065e-3 rtol=0.02 skip=false
 
             beam_p100 = FreeSpace(100e-3) * beam
-            @test radius(beam_p100).x ≈ 10.973023255813956e-3 rtol=0.02 skip=false
-            @test radius(beam_p100).y ≈ 5.5944186046511675e-3 rtol=0.02 skip=false
+            @test radius(beam_p100)[1] ≈ 10.973023255813956e-3 rtol=0.02 skip=false
+            @test radius(beam_p100)[2] ≈ 5.5944186046511675e-3 rtol=0.02 skip=false
 
             beam_p200 = FreeSpace(200e-3) * beam
-            @test radius(beam_p200).x ≈ 16.039069767441863e-3 rtol=0.02 skip=false
-            @test radius(beam_p200).y ≈ 4.539534883720936e-3 rtol=0.02 skip=true
+            @test radius(beam_p200)[1] ≈ 16.039069767441863e-3 rtol=0.02 skip=false
+            @test radius(beam_p200)[2] ≈ 4.539534883720936e-3 rtol=0.02 skip=true
 
             beam_m100 = FreeSpace(-100e-3) * beam
-            @test radius(beam_m100).y ≈ 8.081860465116284e-3 rtol=0.02 skip=false
-            @test radius(beam_m100).x ≈ 0.5544186046511648e-3 rtol=0.02 skip=true
+            @test radius(beam_m100)[2] ≈ 8.081860465116284e-3 rtol=0.02 skip=false
+            @test radius(beam_m100)[1] ≈ 0.5544186046511648e-3 rtol=0.02 skip=true
 
             beam_m200 = FreeSpace(-200e-3) * beam
-            @test radius(beam_m200).y ≈ 9.293023255813958e-3 rtol=0.02 skip=false
-            @test radius(beam_m200).x ≈ 4.4093023255814e-3 rtol=0.02 skip=false
+            @test radius(beam_m200)[2] ≈ 9.293023255813958e-3 rtol=0.02 skip=false
+            @test radius(beam_m200)[1] ≈ 4.4093023255814e-3 rtol=0.02 skip=false
 
             beam_waist = FreeSpace(-112e-3) * beam
-            @test radius(beam_waist).x ≈ 0.0 atol=0.000001 skip=true
+            @test radius(beam_waist)[1] ≈ 0.0 atol=0.000001 skip=true
 
             # @info "" rms=sqrt(
             #     mapreduce(
             #         x->x^2,
             #         +,
             #         [
-            #             radius(beam).x - 7.235348837209305e-3,
-            #             radius(beam).y - 5.3600000000000065e-3,
-            #             radius(beam_p100).x - 10.973023255813956e-3,
-            #             radius(beam_p100).y - 5.5944186046511675e-3,
-            #             radius(beam_p200).x - 16.039069767441863e-3,
-            #             radius(beam_p200).y - 4.539534883720936e-3,
-            #             radius(beam_m100).x - 8.081860465116284e-3,
-            #             radius(beam_m100).y - 0.5544186046511648e-3,
-            #             radius(beam_m200).x - 9.293023255813958e-3,
-            #             radius(beam_m200).y - 4.4093023255814e-3,
+            #             radius(beam)[1] - 7.235348837209305e-3,
+            #             radius(beam)[2] - 5.3600000000000065e-3,
+            #             radius(beam_p100)[1] - 10.973023255813956e-3,
+            #             radius(beam_p100)[2] - 5.5944186046511675e-3,
+            #             radius(beam_p200)[1] - 16.039069767441863e-3,
+            #             radius(beam_p200)[2] - 4.539534883720936e-3,
+            #             radius(beam_m100)[1] - 8.081860465116284e-3,
+            #             radius(beam_m100)[2] - 0.5544186046511648e-3,
+            #             radius(beam_m200)[1] - 9.293023255813958e-3,
+            #             radius(beam_m200)[2] - 4.4093023255814e-3,
             #         ],
             #     ),
             # )
@@ -398,43 +382,43 @@ using StaticArrays
                     ) *
                     FreeSpace(100e-3) *
                     Beam(800e-9; wx=10e-3, wy=10e-3, rx=Inf, ry=Inf, φ=0.0)
-            @test radius(beam).x≈7.235348837209305e-3 rtol=0.01 skip=true
-            @test radius(beam).y≈5.3600000000000065e-3 rtol=0.01 skip=true
+            @test radius(beam)[1]≈7.235348837209305e-3 rtol=0.01 skip=true
+            @test radius(beam)[2]≈5.3600000000000065e-3 rtol=0.01 skip=true
 
             beam_p100 = FreeSpace(100e-3) * beam
-            @test radius(beam_p100).x≈10.973023255813956e-3 rtol=0.01 skip=true
-            @test radius(beam_p100).y≈5.5944186046511675e-3 rtol=0.01 skip=true
+            @test radius(beam_p100)[1]≈10.973023255813956e-3 rtol=0.01 skip=true
+            @test radius(beam_p100)[2]≈5.5944186046511675e-3 rtol=0.01 skip=true
 
             beam_p200 = FreeSpace(200e-3) * beam
-            @test radius(beam_p200).x≈16.039069767441863e-3 rtol=0.01 skip=true
-            @test radius(beam_p200).y≈4.539534883720936e-3 rtol=0.01 skip=true
+            @test radius(beam_p200)[1]≈16.039069767441863e-3 rtol=0.01 skip=true
+            @test radius(beam_p200)[2]≈4.539534883720936e-3 rtol=0.01 skip=true
 
             beam_m100 = FreeSpace(-100e-3) * beam
-            @test radius(beam_m100).x≈8.081860465116284e-3 rtol=0.01 skip=true
-            @test radius(beam_m100).y≈0.5544186046511648e-3 rtol=0.01 skip=true
+            @test radius(beam_m100)[1]≈8.081860465116284e-3 rtol=0.01 skip=true
+            @test radius(beam_m100)[2]≈0.5544186046511648e-3 rtol=0.01 skip=true
 
             beam_m200 = FreeSpace(-200e-3) * beam
-            @test radius(beam_m200).x≈9.293023255813958e-3 rtol=0.01 skip=true
-            @test radius(beam_m200).y≈4.4093023255814e-3 rtol=0.01 skip=true
+            @test radius(beam_m200)[1]≈9.293023255813958e-3 rtol=0.01 skip=true
+            @test radius(beam_m200)[2]≈4.4093023255814e-3 rtol=0.01 skip=true
 
             # beam_waist = FreeSpace(-109e-3) * beam
-            # @test radius(beam_waist).y ≈ 0.0 atol=0.000001
+            # @test radius(beam_waist)[2] ≈ 0.0 atol=0.000001
 
             # @info "" rms=sqrt(
             #     mapreduce(
             #         x->x^2,
             #         +,
             #         [
-            #             radius(beam).x - 7.235348837209305e-3,
-            #             radius(beam).y - 5.3600000000000065e-3,
-            #             radius(beam_p100).x - 10.973023255813956e-3,
-            #             radius(beam_p100).y - 5.5944186046511675e-3,
-            #             radius(beam_p200).x - 16.039069767441863e-3,
-            #             radius(beam_p200).y - 4.539534883720936e-3,
-            #             radius(beam_m100).x - 8.081860465116284e-3,
-            #             radius(beam_m100).y - 0.5544186046511648e-3,
-            #             radius(beam_m200).x - 9.293023255813958e-3,
-            #             radius(beam_m200).y - 4.4093023255814e-3,
+            #             radius(beam)[1] - 7.235348837209305e-3,
+            #             radius(beam)[2] - 5.3600000000000065e-3,
+            #             radius(beam_p100)[1] - 10.973023255813956e-3,
+            #             radius(beam_p100)[2] - 5.5944186046511675e-3,
+            #             radius(beam_p200)[1] - 16.039069767441863e-3,
+            #             radius(beam_p200)[2] - 4.539534883720936e-3,
+            #             radius(beam_m100)[1] - 8.081860465116284e-3,
+            #             radius(beam_m100)[2] - 0.5544186046511648e-3,
+            #             radius(beam_m200)[1] - 9.293023255813958e-3,
+            #             radius(beam_m200)[2] - 4.4093023255814e-3,
             #         ],
             #     ),
             # )

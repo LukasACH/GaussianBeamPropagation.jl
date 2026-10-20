@@ -1,13 +1,15 @@
 """
-    radius(::Beam)
-    radius(::SecondOrderMoments)
-    radius(xx, xy, yy)
+    radius(::Beam [, φ::Real])
+    radius(::SecondOrderMoments [, φ::Real])
+    radius(xx, xy, yy [, φ::Real])
 
 Calculates the 1/e² radius from a `Beam`, `SecondOrderMoments` or measured second order moments (`xx`, `xy`, and `yy`).
-The return value is a `NamedTuple` with entries `(:x, :y, :φ)`, where both _x_ and _y_ are given in metres, and the angle _φ_ is given in radians.
+The return value is a `SVector` with three elements, the radius in both _x_ and _y_, and the angle _φ_.
+The values _x_ and _y_ are the given in metres, and the angle _φ_ is given in radians.
 It follows the definition of ISO 11146 for `x`, `y`, and the angle `φ`.
 
-If the optional argument `φ` is provided, the radius is calculated along the direction of the angle `φ` (in radians). The return value is a `NamedTuple` with entries `(:x, :y)`, where both _x_ and _y_ are given in metres.
+If the optional argument `φ` is provided, the radius is calculated along the direction of the angle `φ` (in radians).
+In that case, the return value is a `SVector` with only two elements, the radius in the _x_ and _y_ directions, both given in metres.
 
 It uses a right-handed coordinate system.
 """
@@ -19,7 +21,7 @@ radius(beam::Beam, φ::Real) = radius(beam.inner, φ)
     divergence(::SecondOrderMoments)
 
 Calculates the divergence angle from a `Beam` or `SecondOrderMoments`.
-The return value is a `NamedTuple` with entries `(:x, :y, :φ)`, where both _x_ and _y_ are given in radians, and the angle _φ_ is given in radians as well.
+The return value is a `SVector` with three elements, the divergence in both _x_ and _y_ (in radians), and the angle _φ_ (in radians).
 
 It uses a right-handed coordinate system.
 """
@@ -30,7 +32,7 @@ divergence(beam::Beam) = divergence(beam.inner)
     phase_curvature(::SecondOrderMoments)
 
 Calculates the phase-front curvature from a `Beam` or `SecondOrderMoments`.
-The return value is a `NamedTuple` with entries `(:x, :y, :φ)`, where both _x_ and _y_ are given in metres/radians, and the angle _φ_ is given in radians.
+The return value is a `SVector` with three elements, the phase curvature in both _x_ and _y_ (in metres/radians), and the angle _φ_ (in radians).
 
 It uses a right-handed coordinate system.
 """
@@ -46,24 +48,26 @@ The return value is a single `Float64` in units of metres²/radians².
 twist(beam::Beam) = twist(beam.inner)
 
 
-function radius(som::SecondOrderMoments{F})::NamedTuple{(:x, :y, :φ),Tuple{F,F,F}} where {F}
+function radius(som::SecondOrderMoments)
     return radius(som.rxrx, som.rxry, som.ryry)
 end
 
-function radius(som::SecondOrderMoments{F}, φ::Real)::NamedTuple{(:x, :y),Tuple{F,F}} where {F}
+function radius(som::SecondOrderMoments, φ::Real)
     return radius(som.rxrx, som.rxry, som.ryry, φ)
 end
 
-function radius(xx::F, xy::F, yy::F, φ0::Real)::NamedTuple{(:x, :y),Tuple{F,F}} where {F}
+function radius(xx::Real, xy::Real, yy::Real, φ0::Real)
     x, y, φ = radius(xx, xy, yy)
 
-    xn = x * cos(φ0 - φ)^2 + y * sin(φ0 - φ)^2
-    yn = x * sin(φ0 - φ)^2 + y * cos(φ0 - φ)^2
+    s, c = sincos(φ0 - φ)
 
-    return (xn, yn)
+    xn = x * c^2 + y * s^2
+    yn = x * s^2 + y * c^2
+
+    return SA[xn, yn]
 end
 
-function radius(xx::F, xy::F, yy::F)::NamedTuple{(:x, :y, :φ),Tuple{F,F,F}} where {F}
+function radius(xx::Real, xy::Real, yy::Real)
     diff_xx_yy = ifelse(xx ≈ yy, 0.0, xx-yy)
 
     a = xx + yy
@@ -74,7 +78,7 @@ function radius(xx::F, xy::F, yy::F)::NamedTuple{(:x, :y, :φ),Tuple{F,F,F}} whe
 
     φ = atan(flipsign(2 * xy, diff_xx_yy), abs(xx - yy)) / 2
 
-    return (; x, y, φ)
+    return SA[x, y, φ]
 end
 
 function divergence(som::SecondOrderMoments)
@@ -87,7 +91,8 @@ function divergence(som::SecondOrderMoments)
     φ = atan(2 * som.θxθy, (som.θxθx - som.θyθy)) / 2
 
     φ = mod2pi(2φ) / 2
-    return (; x, y, φ)
+
+    return SA[x, y, φ]
 end
 
 function phase_curvature(som::SecondOrderMoments)
@@ -116,7 +121,8 @@ function phase_curvature(som::SecondOrderMoments)
     φ = atan(2 * Cxy, (Cxx - Cyy)) / 2
 
     φ = mod2pi(2φ) / 2
-    return (; x, y, φ)
+
+    return SA[x, y, φ]
 end
 
 twist(som::SecondOrderMoments) = som.rxθy - som.ryθx
