@@ -2,8 +2,7 @@ module GaussianBeamPropagation
 
 import Base: convert, *, getproperty, angle
 
-using StaticArrays
-
+using StaticArrays, Optim
 
 include("utils.jl")
 
@@ -31,6 +30,8 @@ include("wigner/wigner.jl")
 
 include("wigner/beam_parameters.jl")
 
+include("fitting.jl")
+
 export Beam, SecondOrderMoments
 export ThinLens,
     FreeSpace, OpticalInterface, MatrixElement, AbstractElement, ThickLens, Mirror
@@ -40,6 +41,8 @@ export get_transfer_matrix
 export Curvature, OpticalPower, IncidenceAngle
 
 export radius, divergence, phase_curvature, twist
+
+export fit_system, propagation_fitting, FitParameters, beam_fit_parameters, observation, SystemFit
 # Deprecated:
 @deprecate iso_radius radius
 
