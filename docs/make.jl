@@ -9,6 +9,7 @@ makedocs(;
             "Helpers"=>"api/helpers.md",
             "Elements"=>"api/elements.md",
         ],
+        "Fitting"=>"fitting.md",
         "Integration with other packages"=>"integration.md",
         "API Reference"=>"reference.md",
     ],
