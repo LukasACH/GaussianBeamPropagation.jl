@@ -1,4 +1,6 @@
-struct SymmetricMoments{T}
+abstract type AbstractMoments end
+
+struct SymmetricMoments{T} <: AbstractMoments
     xx::T
     xy::T
     yy::T
@@ -17,7 +19,7 @@ calculate_matrix(m::SymmetricMoments{T}) where {T} = SA{T}[
     m.xy m.yy
 ]
 
-struct AsymmetricMoments{T}
+struct AsymmetricMoments{T} <: AbstractMoments
     xx::T
     xy::T
     yx::T
@@ -43,11 +45,11 @@ calculate_matrix(m::AsymmetricMoments{T}) where {T} = SA{T}[
 
 struct SecondOrderBeamMoments{T}
     spatial::SymmetricMoments{T}
-    angluar::SymmetricMoments{T}
+    angular::SymmetricMoments{T}
     mixed::AsymmetricMoments{T}
 end
 
-function SecondOrderMoments(rtm::SMatrix{4,4,T,16}) where {T}
+function SecondOrderBeamMoments(rtm::SMatrix{4,4,T,16}) where {T}
     spatial = SymmetricMoments(rtm[1, 1], (rtm[1, 2] + rtm[2, 1]) / 2, rtm[2, 2])
 
     angular = SymmetricMoments(rtm[3, 3], (rtm[3, 4] + rtm[4, 3]) / 2, rtm[4, 4])
