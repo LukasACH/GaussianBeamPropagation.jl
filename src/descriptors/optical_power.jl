@@ -13,6 +13,8 @@ end
 
 Base.convert(::Type{OpticalPower{T}}, P::OpticalPower) where {T<:Real} = OpticalPower{T}(P)
 
+OpticalPower(P::OpticalPower) = OpticalPower(P.xx, P.xy, P.yy)
+
 function OpticalPower{T}(P::OpticalPower) where {T<:Real}
     return OpticalPower{T}(T(P.xx), T(P.xy), T(P.yy))
 end
