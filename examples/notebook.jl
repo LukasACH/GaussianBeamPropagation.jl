@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v1.0.3
+# v1.0.4
 
 #> [frontmatter]
 #> language = "en-GB"
@@ -28,14 +28,16 @@ begin
     # activate a temporary environment
     Pkg.activate(mktempdir())
     Pkg.add([
-        Pkg.PackageSpec(name="GaussianBeamPropagation", url="https://github.com/LukasACH/GaussianBeamPropagation.jl", rev="232beb0"),
+        Pkg.PackageSpec(name="GaussianBeamPropagation", url="https://github.com/LukasACH/GaussianBeamPropagation.jl", rev="b2de6d5"),
         Pkg.PackageSpec(name="Unitful"),
         Pkg.PackageSpec(name="DSP"),
         Pkg.PackageSpec(name="Makie"),
         Pkg.PackageSpec(name="CairoMakie"),
         Pkg.PackageSpec(name="PlutoUI"),
+        Pkg.PackageSpec(name="Optim"),
     ])
-    using Unitful, DSP, Makie, CairoMakie, PlutoUI
+    Pkg.update()
+    using Unitful, DSP, Makie, CairoMakie, PlutoUI, Optim
     using GaussianBeamPropagation
 end
 
@@ -285,9 +287,9 @@ mod_pi(x) = mod2pi(2x) / 2
 # ╔═╡ b26ed39c-c7fd-4c72-b7ca-ec2737069cdc
 function sample_beam(func, beams::AbstractVector{<:Beam})
     r = map(func, beams)
-    x = @. getfield(r, :x)
-    y = @. getfield(r, :y)
-    φ = @. getfield(r, :φ)
+    x = getindex.(r, 1)
+    y = getindex.(r, 2)
+    φ = getindex.(r, 3)
 
     return (; rx=x, ry=y, φx=mod_pi.(φ), φy=mod_pi.(φ .+ π / 2))
 end
@@ -812,6 +814,220 @@ end
 # ╔═╡ 766bfe5b-75fb-4afa-aef8-93f6dc1ab385
 set_theme!(get_plot_theme())
 
+# ╔═╡ be966a2b-f7e0-4908-a6ca-18682e11806d
+function observation(wx, wy, φ)
+    rx = @. (wx / 2)^2
+    ry = @. (wy / 2)^2
+
+    xy_all = GaussianBeamPropagation.rotate2.(rx, ry, φ)
+    rxrx = map(x -> x[1], xy_all)
+    rxry = map(x -> x[2], xy_all)
+    ryry = map(x -> x[3], xy_all)
+
+    return (rxrx, rxry, ryry)
+end
+
+# ╔═╡ fcd8f6c7-5568-4ddf-b307-be4f195c97b3
+
+function propagation_model(propagation::Function, λ::Real, vars::Matrix, params::Vector)
+    wsom = SecondOrderMoments(;
+        rx=abs(params[1]),
+        ry=abs(params[2]),
+        φ_r=params[3],
+        θx=params[4],
+        θy=params[5],
+        φ_θ=params[6],
+        rθx=params[7],
+        rθy=params[8],
+        φ_rθ=params[9],
+        twist=params[10],
+    )
+
+    beam = Beam(λ, wsom)
+    propagated_beam = [propagation(row, params[11:end]) * beam for row in eachrow(vars)]
+    som = @. SecondOrderMoments(propagated_beam)
+
+    return (getproperty.(som, :rxrx), getproperty.(som, :rxry), getproperty.(som, :ryry))
+end
+
+# ╔═╡ 9bb3e45a-6844-4317-b9da-88f8134b7faa
+function amplifier_fitting()
+    λ = 1.03e-6
+    ε2 = (λ / 4π)^2
+
+    w2_up = (4.0e-3 / 2)^2
+    w2 = (3.0e-3 / 2)^2
+    w2_lb = (2.0e-3 / 2)^2
+    @info "Fitting bounds" w2_up w2 w2_lb
+
+    input_param = [w2_lb w2 w2_up # rx
+        w2_lb w2 w2_up # ry
+        -2π 0.0 2π # φ_r
+        (ε2/w2_up) (ε2/w2) (ε2/w2_lb) # θx
+        (ε2/w2_up) (ε2/w2) (ε2/w2_lb) # θy
+        -2π 0.0 2π # φ_θ
+        -Inf 0.0 Inf # rθx
+        -Inf 0.0 Inf # rθy
+        -2π 0.0 2π  # φ_rθ
+        -Inf 0.0 Inf # twist
+        0.5 0.556 0.6 # d2
+        1.5 2.052 3.0]
+    param_ub = input_param[:, 3]
+    param_0 = input_param[:, 2]
+    param_lb = input_param[:, 1]
+
+    @info "Fitting initial parameters" string(param_ub) string(param_0) string(param_lb)
+
+    # 1: Single or double pass
+    # 2: beam diameter in mm of major axis
+    # 3: beam diameter in mm of minor axis
+    # 4: beam orientation in degrees
+    data = [1 70 6.360 5.820 deg2rad(-10)
+        1 71 6.150 5.610 deg2rad(-9)
+        1 72 5.980 5.480 deg2rad(-10)
+        1 73 5.860 5.340 deg2rad(-10)
+        1 74 5.680 5.230 deg2rad(-7)
+        1 75 5.580 5.160 deg2rad(-5)
+        1 76 5.460 5.110 deg2rad(-1)
+        1 77 5.390 5.068 deg2rad(1.5)
+        1 78 5.340 5.024 deg2rad(3)
+        1 79 5.290 5.019 deg2rad(6)
+        1 80 5.320 5.050 deg2rad(10)
+        1 81 5.340 5.070 deg2rad(14)
+        1 82 5.410 5.170 deg2rad(19)
+        1 83 5.440 5.160 deg2rad(20)
+        1 84 5.590 5.290 deg2rad(27)
+        2 70 7.500 6.700 deg2rad(-24)
+        2 71 6.700 6.200 deg2rad(-20)
+        2 72 6.130 5.840 deg2rad(-4)
+        2 73 5.770 5.550 deg2rad(18.2)
+        2 74 5.630 5.340 deg2rad(31)
+        2 75 5.515 5.013 deg2rad(42)
+        2 76 5.560 4.803 deg2rad(41.5)
+        2 77 5.547 4.712 deg2rad(42.7)
+        2 78 5.530 4.678 deg2rad(39.4)
+        2 79 5.596 4.653 deg2rad(38.7)
+        2 80 5.567 4.686 deg2rad(35.8)
+        2 81 5.580 4.782 deg2rad(34.3)
+        2 82 5.587 4.959 deg2rad(29.67)
+        2 83 5.617 5.068 deg2rad(23)
+        2 84 5.734 5.351 deg2rad(6.6)]
+
+    obs_xx, obs_xy, obs_yy = observation(data[:, 3] / 2, data[:, 4] / 2, -data[:, 5])
+    function objective(params)
+        pred_xx, pred_xy,
+        pred_yy = propagation_model(
+            λ, data[:, 1:2], params,
+        ) do vars, params
+            n, δ4f = vars
+            δ2, δ3 = abs.(params) # 0.556, 2.052
+
+            δ1 = 0.401
+
+            f_disk = Inf
+            f_vex = -0.5
+            f_4f = 0.75
+
+            d1_4f_1 = GaussianBeamPropagation.FreeSpace(f_4f)
+            d1_4f_2 = GaussianBeamPropagation.FreeSpace(2f_4f + δ1 + δ4f)
+            d1_4f_3 = GaussianBeamPropagation.FreeSpace(f_4f)
+            d2 = GaussianBeamPropagation.FreeSpace(δ2)
+            d3 = GaussianBeamPropagation.FreeSpace(δ3)
+
+            (dx1, dy1) = (28, 30)
+            (dx2, dy2) = (22, 25)
+            α1_4f = atan(sqrt(dx1^2 + dy1^2) / 2, 480)
+            γ1_4f = atan(-dx1, -dy1)
+            α2_4f = atan(sqrt(dx2^2 + dy2^2) / 2, 530)
+            γ2_4f = atan(-dx2, dy2)
+
+            α_disk = atan(48 / 2, 580)
+            α_vex = atan(sqrt(64^2 + 4^2) / 2, 330)
+
+            disk = GaussianBeamPropagation.Mirror(OpticalPower(1 / f_disk), IncidenceAngle(α_disk, deg2rad(0)))
+            mvex = GaussianBeamPropagation.Mirror(OpticalPower(1 / f_vex), IncidenceAngle(α_vex, deg2rad(0)))
+            m4f1 = GaussianBeamPropagation.Mirror(OpticalPower(1 / f_4f), IncidenceAngle(α1_4f, γ1_4f))
+            m4f2 = GaussianBeamPropagation.Mirror(OpticalPower(1 / f_4f), IncidenceAngle(α2_4f, γ2_4f))
+
+            amplifier =
+                d1_4f_1 *
+                    m4f1 *
+                    d1_4f_2 *
+                    m4f2 *
+                    d1_4f_3 *
+                    disk *
+                    d2 *
+                    mvex *
+                    d3 *
+                    d3 *
+                    mvex *
+                    d2 *
+                    disk *
+                    d1_4f_3 *
+                    m4f2 *
+                    d1_4f_2 *
+                    m4f1 *
+                    d1_4f_1
+
+            if n == 1
+                return amplifier
+            elseif n == 2
+                return GaussianBeamPropagation.FreeSpace(0 * 1.15) * amplifier * amplifier
+            else
+                error("Only single or double pass supported")
+            end
+        end
+
+        return log(
+            sum(
+                (obs_xx .- pred_xx) .^ 2 +
+                    (obs_xy .- pred_xy) .^ 2 +
+                    (obs_yy .- pred_yy) .^ 2,
+            ),
+        )
+    end
+
+    @info "Fit start"
+    fit = optimize(
+        objective,
+        param_lb,
+        param_ub,
+        param_0,
+        NelderMead(),
+        # Fminbox(LBFGS()),
+        Optim.Options(; g_tol=1e-10, iterations=100000),
+    )
+    @info "Fit complete"
+
+    params = Optim.minimizer(fit)
+    som = SecondOrderMoments(;
+        rx=abs(params[1]),
+        ry=abs(params[2]),
+        φ_r=params[3],
+        θx=params[4],
+        θy=params[5],
+        φ_θ=params[6],
+        rθx=params[7],
+        rθy=params[8],
+        φ_rθ=params[9],
+        twist=params[10],
+    )
+
+    @info "Fitted parameters" params
+
+    beam = Beam(λ, som)
+    @info "Fitted Beam SOM" beam.inner radius(beam)
+
+    # @info "objective value" minimum(fit) objective(params)
+    return fit
+end
+
+# ╔═╡ 0dd20864-1093-4fef-bb5d-1cdfd2116ae4
+fit = amplifier_fitting()
+
+# ╔═╡ 8d4b0b32-7f92-4360-8e5f-494849bca0c3
+fit.stopped_by
+
 # ╔═╡ Cell order:
 # ╠═26f1a4ae-ab0f-4230-95be-94a15062be45
 # ╟─9039be31-25cf-4192-adea-fdc1bc71c57c
@@ -885,3 +1101,8 @@ set_theme!(get_plot_theme())
 # ╠═bdcdf051-5d35-4408-8406-3104ef52d52c
 # ╠═d44fc394-9607-4a56-be18-05ecb01686a5
 # ╟─7f2124ae-bc43-45a8-b8b5-3fe776261a71
+# ╠═9bb3e45a-6844-4317-b9da-88f8134b7faa
+# ╠═be966a2b-f7e0-4908-a6ca-18682e11806d
+# ╠═fcd8f6c7-5568-4ddf-b307-be4f195c97b3
+# ╠═0dd20864-1093-4fef-bb5d-1cdfd2116ae4
+# ╠═8d4b0b32-7f92-4360-8e5f-494849bca0c3
