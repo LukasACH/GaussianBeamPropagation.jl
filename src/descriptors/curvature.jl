@@ -42,6 +42,8 @@ end
 Base.convert(::Type{Curvature{T}}, κ::Curvature) where {T<:Real} =
     Curvature{T}(κ)
 
+Curvature(κ::Curvature) = Curvature(κ.xx, κ.xy, κ.yy)
+
 Curvature{T}(κ::Curvature) where {T<:Real} =
     Curvature{T}(T(κ.xx), T(κ.xy), T(κ.yy))
 
