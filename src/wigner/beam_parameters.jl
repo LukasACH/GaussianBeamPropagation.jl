@@ -61,8 +61,8 @@ function radius(xx::Real, xy::Real, yy::Real, φ0::Real)
 
     s, c = sincos(φ0 - φ)
 
-    xn = x * c^2 + y * s^2
-    yn = x * s^2 + y * c^2
+    xn = sqrt((x * c)^2 + (y * s)^2)
+    yn = sqrt((x * s)^2 + (y * c)^2)
 
     return SA[xn, yn]
 end
