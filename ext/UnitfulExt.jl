@@ -154,8 +154,7 @@ function GaussianBeamPropagation.SecondOrderMoments(
     )
 
     if ismissing(rxrx_) || ismissing(ryry_) || ismissing(θxθx_) || ismissing(θyθy_)
-        @error "Insufficient parameters to determine Wigner Second Order Moments"
-        return missing
+        throw(ArgumentError("insufficient parameters: each axis needs (z, zR), (w, r) or q"))
     end
 
     rxrx, rxry, ryry = GaussianBeamPropagation.rotate2(rxrx_, ryry_, φ)
