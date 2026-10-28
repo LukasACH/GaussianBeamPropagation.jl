@@ -59,8 +59,8 @@ function rotate4(xx::Real, xy::Real, yx::Real, yy::Real, α::Real)
     return xx_, xy_, yx_, yy_
 end
 
-@deprecate rotate(x, y, α) rotate2(x, y, α)
-@deprecate rotate_around(A, B, C, α) rotate3(A, C, B, α)
-@deprecate rotate_around(A, B, α) rotate2(A, B, α)
-@deprecate rotate_around(XX, XY, YX, YY, α) rotate4(XX, XY, YX, YY, α)
-@deprecate rotate_around(α; xx, xy, yx, yy) rotate4(xx, xy, yx, yy, α)
+@deprecate rotate(x, y, α) rotate2(x, y, α) false
+@deprecate rotate_around(A, B, C, α) rotate3(A, C, B, α) false
+@deprecate rotate_around(A, B, α) rotate2(A, B, α) false
+@deprecate rotate_around(XX, XY, YX, YY, α) rotate4(XX, XY, YX, YY, α) false
+@deprecate rotate_around(α; xx, xy, yx, yy) rotate4(xx, xy, yx, yy, α) false
