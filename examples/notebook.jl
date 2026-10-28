@@ -42,50 +42,34 @@ begin
 end
 
 # ╔═╡ 9039be31-25cf-4192-adea-fdc1bc71c57c
-λ = 1030u"nm"
-
-# ╔═╡ 7f2fc98a-7a64-4c26-872e-0e8de626d4a6
-D_disk = OpticalPower(1 / (f_disk = 5 * u"m"))
+λ = 1030e-9
 
 # ╔═╡ eaebc649-e56f-4fff-b271-942f6a251645
-D_vex = OpticalPower(1 / (f_vex = -0.5u"m"))
+D_vex = OpticalPower(1 / (f_vex = -0.5))
 
 # ╔═╡ 962ab9fe-fdc2-4adf-a802-beee37ab1874
-D_4f = OpticalPower(1 / (f_4f = 0.75u"m"))
+D_4f = OpticalPower(1 / (f_4f = 0.75))
 
 # ╔═╡ a9da072e-137e-494b-bc59-53b273269550
 md"Number of round-trips: $(@bind n NumberField(1:20, default=2))"
 
 # ╔═╡ 4705a3ad-2d69-43ce-b5e6-703f1a610ef3
-δ_vex = 0.55u"m"
+δ_vex = 0.55
 
 # ╔═╡ 18921edc-4607-49f9-bec6-a721c6786fd7
-beam = Beam(λ; wx=5.8u"mm"/2, wy=5.6u"mm"/2, rx=Inf * u"m", ry=(Inf * u"m"))
+beam = Beam(λ; wx=5.8/1000/2, wy=5.6/1000/2, rx=Inf, ry=(Inf))
 
 # ╔═╡ ded8db82-0244-4df5-8d79-7f06d2ea820b
 md"Fourier transform beam size: $(@bind w0_in_raw NumberField(3.00:0.05:7.00, default=5.7)) mm"
 
 # ╔═╡ bfe681a4-b088-440a-b384-5d8c30d108d9
-w0_in = w0_in_raw * u"mm" / 2
+w0_in = w0_in_raw /1000 / 2
 
 # ╔═╡ d53a337a-68b5-4366-905d-3f479b2c4bef
-zR_in = u"m"(π * w0_in^2 / λ)
-
-# ╔═╡ 3c302bf8-8fb3-4de0-84c1-73118ba91d31
-δ_4f = f_4f^2 * (1 / zR_in - 1 / f_disk + 1 / (δ_vex - f_vex))
+zR_in = (π * w0_in^2 / λ)
 
 # ╔═╡ 4adb1395-344a-40a9-8eb5-8f12131419b7
 δ_fourier = zR_in * f_vex^2 / (2(δ_vex - f_vex)^2) + δ_vex * f_vex / (δ_vex - f_vex)
-
-# ╔═╡ 2aa89eae-aa50-4217-85a4-4996dce10dbb
-md"""
-### Layout:
-| Distance | Length |
-|:-------- | ------- |
-| 4f-imaging | $(round(u"cm", δ_4f; sigdigits=3)) |
-| disk to vex | $(round(u"cm", δ_vex; sigdigits=3)) |
-| vex to end | $(round(u"cm", δ_fourier; sigdigits=3)) |
-"""
 
 # ╔═╡ b96e83d3-6917-4924-b530-c40f8de43964
 md"Astigmatism compensated: $(@bind compensated Switch())"
@@ -95,6 +79,22 @@ md"""
 Astigmatic surface of thin disk:
 - Variance: $(@bind disk_variance_change PlutoUI.Slider(0.0:0.001:0.02, show_value=true))
 - Angle: $(@bind disk_variance_angle PlutoUI.Slider(0:180, show_value=true))
+"""
+
+# ╔═╡ 7f2fc98a-7a64-4c26-872e-0e8de626d4a6
+D_disk = OpticalPower(1 / (f_disk = 5))
+
+# ╔═╡ 3c302bf8-8fb3-4de0-84c1-73118ba91d31
+δ_4f = f_4f^2 * (1 / zR_in - 1 / f_disk + 1 / (δ_vex - f_vex))
+
+# ╔═╡ 2aa89eae-aa50-4217-85a4-4996dce10dbb
+md"""
+### Layout:
+| Distance | Length |
+|:-------- | ------- |
+| 4f-imaging | $(round( δ_4f; sigdigits=3)) |
+| disk to vex | $(round( δ_vex; sigdigits=3)) |
+| vex to end | $(round( δ_fourier; sigdigits=3)) |
 """
 
 # ╔═╡ 0a107c1e-3c84-40a4-8b7b-cd2d75ad5d4f
@@ -184,19 +184,19 @@ end
 
 
 # ╔═╡ fff03b9f-474b-42fd-9f8d-2914c8ed641a
-d1_4f = FreeSpace(ustrip(u"m", f_4f))
+d1_4f = FreeSpace( f_4f)
 
 # ╔═╡ 2e403cf7-a811-45e0-b77c-3cace0d4a28e
-dc_4f = FreeSpace(ustrip(u"m", 2f_4f + δ_4f))
+dc_4f = FreeSpace(2f_4f + δ_4f)
 
 # ╔═╡ b1576b17-f8e7-45c5-b8d5-ab91f88b65f3
-d2_4f = FreeSpace(ustrip(u"m", f_4f))
+d2_4f = FreeSpace(f_4f)
 
 # ╔═╡ c0ab9bb5-6dd8-4f0a-afc8-b1063c961d0a
-d_vex = FreeSpace(ustrip(u"m", δ_vex)) #FreeSpace2D(0.582103)
+d_vex = FreeSpace( δ_vex) #FreeSpace2D(0.582103)
 
 # ╔═╡ 1da9a051-6af1-4eda-957d-6fb1dca94a5f
-d_fourier = FreeSpace(ustrip(u"m", δ_fourier)) #FreeSpace2D(2.66144)
+d_fourier = FreeSpace(δ_fourier) #FreeSpace2D(2.66144)
 
 # ╔═╡ 10bf3584-2608-4dbe-bffd-c93b205404dc
 D_detuning = OpticalPower(δ_4f / f_4f^2)
@@ -216,22 +216,22 @@ end
 incidence_disk = IncidenceAngle(ι=atan(48 / 2, 580), θ=0)
 
 # ╔═╡ eea0920f-b457-465b-b263-478f3bbc7418
-m4f1 = Mirror(D_4f, incidence=incidence_4f_1)
+m4f1 = Mirror(D_4f)
 
 # ╔═╡ ab65d764-0e97-4891-aee3-c0d4480fe3c3
-m4f2 = Mirror(D_4f, incidence=incidence_4f_2)
+m4f2 = Mirror(D_4f)
 
 # ╔═╡ 926545c7-40fc-470f-85e1-5754978af885
-mvex = Mirror(D_vex, incidence=incidence_vex)
+mvex = Mirror(D_vex, incidence_vex)
 
 # ╔═╡ d9094462-c1bb-41b2-954d-4f0995d3f946
-part5 = d1_4f * m4f1 * dc_4f
+part5 = d1_4f * m4f1 * dc_4f;
 
 # ╔═╡ ab6aaa86-91b7-48fb-b887-5749a9942020
-part3 = d_vex * mvex * d_fourier * d_fourier * mvex * d_vex
+part3 = d_vex * mvex * d_fourier * d_fourier * mvex * d_vex;
 
 # ╔═╡ d3576f04-9c0c-4763-b4b5-1958b31b4ffe
-part1 = dc_4f * m4f1 * d1_4f
+part1 = dc_4f * m4f1 * d1_4f;
 
 # ╔═╡ 0097f3bd-989d-42b5-aace-4c328a3c8638
 # ╠═╡ disabled = true
@@ -240,10 +240,19 @@ beam = Beam(λ; wx=w0_in, wy=w0_in, rx=Inf * u"m", ry=(-Inf * u"m"))
   ╠═╡ =#
 
 # ╔═╡ 61661f96-a646-4383-8810-3567461a3991
-Ds = range(-0.06, 0.06, 1_00)
+Ds = range(-0.06, 0.06, 100)
 
 # ╔═╡ 878b2db6-1703-47e2-b5c6-5fe75a39827b
-sample_points = Ds .* ustrip(u"m", f_4f)^2
+sample_points = Ds .*  f_4f^2
+
+# ╔═╡ 766bfe5b-75fb-4afa-aef8-93f6dc1ab385
+# ╠═╡ disabled = true
+#=╠═╡
+set_theme!(get_plot_theme())
+  ╠═╡ =#
+
+# ╔═╡ 835832e1-6d97-4ad0-add3-004bcdb33c17
+Sphere=Makie.Sphere
 
 # ╔═╡ 6201acae-04a9-43b1-9940-11894e6589d3
 CairoMakie.activate!(type = "svg")
@@ -255,16 +264,16 @@ md"## Plotting"
 disk_variance = OpticalPower(disk_variance_change, -disk_variance_change; φ=deg2rad(disk_variance_angle))
 
 # ╔═╡ 7fb71e8b-2085-478b-be03-9ee11fde9ac2
-disk = Mirror(D_disk + disk_variance, incidence=incidence_disk)
+disk = Mirror(D_disk + disk_variance)
 
 # ╔═╡ 8e43b31c-9dde-4d97-8e25-d46e99db3191
-part4 = m4f2 * d2_4f * disk
+part4 = m4f2 * d2_4f * disk;
 
 # ╔═╡ dd1f81cb-fa26-4b60-a1e9-deea16823669
-part2 = disk * d2_4f * m4f2
+part2 = disk * d2_4f * m4f2;
 
 # ╔═╡ a39bce74-278b-4f76-a457-6594961f643b
-function amplifier(; ΔD=0.0, Δ4f=0.0)
+function amplifier(n; ΔD=0.0, Δ4f=0.0)
     Δ4f = FreeSpace(Δ4f)
     Δdisk = Mirror(FocalPower(ΔD))
     return (part5 * Δ4f * part4 * Δdisk * part3 * Δdisk * part2 * Δ4f * part1)^n
@@ -356,7 +365,7 @@ begin
     rx, ry, φ_rx, φ_ry = sample_beam_continous(
         radius,
         # map(Δ4f -> amplifier(; Δ4f) * beam, sample_points),
-        map(ΔD -> amplifier(; ΔD) * beam, Ds),
+        map(ΔD -> amplifier(n; ΔD) * beam, Ds),
     )
     
     clamp!(rx, 0, 1000)
@@ -367,8 +376,47 @@ end
 Rx, Ry, φ_Rx, φ_Ry = sample_beam_continous(
         phase_curvature,
         # map(Δ4f -> amplifier(; Δ4f) * beam, sample_points),
-        map(ΔD -> amplifier(; ΔD) * beam, Ds),
+        map(ΔD -> amplifier(n; ΔD) * beam, Ds),
     )
+
+# ╔═╡ 1a0e26f6-3528-4783-93fa-1695397f1653
+begin
+    local fig = Figure()
+    local ax = Axis(fig[0,1])
+    ylims!(ax, 0.0025, 0.005)
+
+    local beam = Beam(λ; wx=5.7/1000/2, wy=5.7/1000/2, rx=Inf, ry=(Inf))
+
+    local diskdiff = -0.00
+    
+    local rx, ry, φ_rx, φ_ry = sample_beam_continous(
+        radius,
+        map(Δ4f -> (part5 * FreeSpace(Δ4f) * part4 * Mirror(Curvature(diskdiff,-diskdiff)) * part3 * Mirror(Curvature(diskdiff,-diskdiff)) * part2 *FreeSpace(Δ4f) * part1)^1 * beam, sample_points),
+    )
+
+    hlines!(ax, [5.7/1000/2, 5.7/1000/2])
+    
+    lines!(ax, sample_points, rx)
+    lines!(ax, sample_points, ry)
+
+    local rx, ry, φ_rx, φ_ry = sample_beam_continous(
+        radius,
+        map(Δ4f -> (part5 * FreeSpace(Δ4f) * part4 * Mirror(Curvature(diskdiff,-diskdiff)) * part3 * Mirror(Curvature(diskdiff,-diskdiff))  * part2 * FreeSpace(Δ4f)* part1)^2 * beam, sample_points),
+    )
+    
+    lines!(ax, sample_points, rx)
+    lines!(ax, sample_points, ry)
+
+    local rx, ry, φ_rx, φ_ry = sample_beam_continous(
+        radius,
+        map(Δ4f -> (part5 * FreeSpace(Δ4f) * part4 * Mirror(Curvature(diskdiff,-diskdiff)) * part3 * Mirror(Curvature(diskdiff,-diskdiff)) * part2 * FreeSpace(Δ4f) * part1)^6 * beam, sample_points),
+    )
+    
+    lines!(ax, sample_points, rx)
+    lines!(ax, sample_points, ry)
+
+    fig
+end
 
 # ╔═╡ c2155af3-2479-462c-8348-f82975ba38d0
 macro px_str(value)
@@ -811,9 +859,6 @@ function get_plot_theme(fontsize)
     )
 end
 
-# ╔═╡ 766bfe5b-75fb-4afa-aef8-93f6dc1ab385
-set_theme!(get_plot_theme())
-
 # ╔═╡ be966a2b-f7e0-4908-a6ca-18682e11806d
 function observation(wx, wy, φ)
     rx = @. (wx / 2)^2
@@ -1030,23 +1075,23 @@ fit.stopped_by
 
 # ╔═╡ Cell order:
 # ╠═26f1a4ae-ab0f-4230-95be-94a15062be45
-# ╟─9039be31-25cf-4192-adea-fdc1bc71c57c
+# ╠═9039be31-25cf-4192-adea-fdc1bc71c57c
 # ╟─d53a337a-68b5-4366-905d-3f479b2c4bef
-# ╠═7f2fc98a-7a64-4c26-872e-0e8de626d4a6
-# ╠═eaebc649-e56f-4fff-b271-942f6a251645
-# ╠═962ab9fe-fdc2-4adf-a802-beee37ab1874
+# ╟─eaebc649-e56f-4fff-b271-942f6a251645
+# ╟─962ab9fe-fdc2-4adf-a802-beee37ab1874
 # ╟─2aa89eae-aa50-4217-85a4-4996dce10dbb
 # ╟─a9da072e-137e-494b-bc59-53b273269550
 # ╟─3c302bf8-8fb3-4de0-84c1-73118ba91d31
 # ╟─4705a3ad-2d69-43ce-b5e6-703f1a610ef3
-# ╠═4adb1395-344a-40a9-8eb5-8f12131419b7
-# ╠═18921edc-4607-49f9-bec6-a721c6786fd7
+# ╟─4adb1395-344a-40a9-8eb5-8f12131419b7
+# ╟─18921edc-4607-49f9-bec6-a721c6786fd7
 # ╟─bfe681a4-b088-440a-b384-5d8c30d108d9
 # ╟─ded8db82-0244-4df5-8d79-7f06d2ea820b
 # ╟─b96e83d3-6917-4924-b530-c40f8de43964
 # ╟─83c75062-091a-4180-9f4b-f7799356eadd
+# ╠═7f2fc98a-7a64-4c26-872e-0e8de626d4a6
+# ╟─b826e551-f94d-41ef-bc6c-7c86c67ff973
 # ╟─0a107c1e-3c84-40a4-8b7b-cd2d75ad5d4f
-# ╠═b826e551-f94d-41ef-bc6c-7c86c67ff973
 # ╠═adbc4a99-02f4-4dac-abad-3b32b6150cde
 # ╠═49e5a4f1-6d31-4fc2-b055-4c9f89a4904a
 # ╠═352e37a2-b912-40cc-94c4-a945bd86019e
@@ -1065,19 +1110,21 @@ fit.stopped_by
 # ╠═ab65d764-0e97-4891-aee3-c0d4480fe3c3
 # ╠═7fb71e8b-2085-478b-be03-9ee11fde9ac2
 # ╠═926545c7-40fc-470f-85e1-5754978af885
-# ╟─d9094462-c1bb-41b2-954d-4f0995d3f946
-# ╟─8e43b31c-9dde-4d97-8e25-d46e99db3191
-# ╟─ab6aaa86-91b7-48fb-b887-5749a9942020
+# ╠═d9094462-c1bb-41b2-954d-4f0995d3f946
+# ╠═8e43b31c-9dde-4d97-8e25-d46e99db3191
+# ╠═ab6aaa86-91b7-48fb-b887-5749a9942020
 # ╠═dd1f81cb-fa26-4b60-a1e9-deea16823669
 # ╠═d3576f04-9c0c-4763-b4b5-1958b31b4ffe
 # ╠═a39bce74-278b-4f76-a457-6594961f643b
 # ╠═0097f3bd-989d-42b5-aace-4c328a3c8638
 # ╠═61661f96-a646-4383-8810-3567461a3991
 # ╠═878b2db6-1703-47e2-b5c6-5fe75a39827b
-# ╟─b0edc5a7-45cb-4dfd-942d-c0f88d2de2ce
+# ╠═b0edc5a7-45cb-4dfd-942d-c0f88d2de2ce
 # ╟─68b9bc70-9470-4c47-a7a6-cb6ccb1db4e2
 # ╠═766bfe5b-75fb-4afa-aef8-93f6dc1ab385
+# ╠═835832e1-6d97-4ad0-add3-004bcdb33c17
 # ╠═6201acae-04a9-43b1-9940-11894e6589d3
+# ╠═1a0e26f6-3528-4783-93fa-1695397f1653
 # ╟─99580059-46f8-4eca-afb1-f0bd863bd0b9
 # ╠═351909be-23ba-4f99-b19d-38626aeb459b
 # ╟─c5a3348c-1534-4292-aa90-aa6ea3bc0b6a
