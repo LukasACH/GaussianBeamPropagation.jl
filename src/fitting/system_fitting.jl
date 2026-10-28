@@ -57,7 +57,7 @@ function observation(wx, wy, φ)
     rx = @. (wx / 2)^2
     ry = @. (wy / 2)^2
 
-    xy_all = rotate2.(rx, ry, φ)
+    xy_all = tensor_from_principal.(rx, ry, φ)
     rxrx = map(x -> x[1], xy_all)
     rxry = map(x -> x[2], xy_all)
     ryry = map(x -> x[3], xy_all)

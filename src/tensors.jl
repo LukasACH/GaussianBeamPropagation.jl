@@ -1,11 +1,8 @@
-mod_pi(x) = mod2pi(2x) / 2
-mod_mpi2_pi2(x) = mod_pi(x + π / 2) - π / 2
-
 """
     principal_axes(xx, xy, yy)
 
 Principal values and orientation `(x, y, φ)` of the symmetric tensor `[xx xy; xy yy]`, such that
-`rotate2(x, y, φ) == (xx, xy, yy)`.
+`tensor_from_principal(x, y, φ) == (xx, xy, yy)`.
 
 `x` belongs to the principal axis closest to the _x_ direction, and `φ ∈ [−π/4, π/4]` is the
 angle between the two. All quantities given along _x_ and _y_ use this convention.
@@ -26,7 +23,13 @@ function principal_axes(xx::Real, xy::Real, yy::Real)
     return x, y, φ
 end
 
-function rotate2(x::Real, y::Real, α::Real)
+"""
+    tensor_from_principal(x, y, α)
+
+Components `(xx, xy, yy)` of the symmetric tensor with the principal values `x` and `y`, whose
+principal axes are rotated by `α`. Inverse of [`principal_axes`](@ref).
+"""
+function tensor_from_principal(x::Real, y::Real, α::Real)
     s, c = sincos(α)
     s2 = s^2
     c2 = c^2
@@ -39,7 +42,12 @@ function rotate2(x::Real, y::Real, α::Real)
     return xx_, xy_, yy_
 end
 
-function rotate3(xx::Real, xy::Real, yy::Real, α::Real)
+"""
+    rotate_symmetric(xx, xy, yy, α)
+
+Rotate the symmetric tensor `[xx xy; xy yy]` by `α`.
+"""
+function rotate_symmetric(xx::Real, xy::Real, yy::Real, α::Real)
     s, c = sincos(α)
     s2 = s^2
     c2 = c^2
@@ -52,7 +60,12 @@ function rotate3(xx::Real, xy::Real, yy::Real, α::Real)
     return xx_, xy_, yy_
 end
 
-function rotate4(xx::Real, xy::Real, yx::Real, yy::Real, α::Real)
+"""
+    rotate_general(xx, xy, yx, yy, α)
+
+Rotate the (not necessarily symmetric) tensor `[xx xy; yx yy]` by `α`.
+"""
+function rotate_general(xx::Real, xy::Real, yx::Real, yy::Real, α::Real)
     s, c = sincos(α)
     s2 = s^2
     c2 = c^2
@@ -66,8 +79,8 @@ function rotate4(xx::Real, xy::Real, yx::Real, yy::Real, α::Real)
     return xx_, xy_, yx_, yy_
 end
 
-@deprecate rotate(x, y, α) rotate2(x, y, α) false
-@deprecate rotate_around(A, B, C, α) rotate3(A, C, B, α) false
-@deprecate rotate_around(A, B, α) rotate2(A, B, α) false
-@deprecate rotate_around(XX, XY, YX, YY, α) rotate4(XX, XY, YX, YY, α) false
-@deprecate rotate_around(α; xx, xy, yx, yy) rotate4(xx, xy, yx, yy, α) false
+@deprecate rotate(x, y, α) tensor_from_principal(x, y, α) false
+@deprecate rotate_around(A, B, C, α) rotate_symmetric(A, C, B, α) false
+@deprecate rotate_around(A, B, α) tensor_from_principal(A, B, α) false
+@deprecate rotate_around(XX, XY, YX, YY, α) rotate_general(XX, XY, YX, YY, α) false
+@deprecate rotate_around(α; xx, xy, yx, yy) rotate_general(xx, xy, yx, yy, α) false

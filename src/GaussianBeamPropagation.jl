@@ -2,7 +2,7 @@ module GaussianBeamPropagation
 
 using StaticArrays, Optim
 
-include("utils.jl")
+include("tensors.jl")
 
 include("wigner/second_order_moments.jl")
 include("wigner/beam.jl")

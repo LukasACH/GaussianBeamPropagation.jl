@@ -34,12 +34,12 @@ function ThinLens(
 end
 
 function get_transfer_matrix(e::ThinLens{T})::SMatrix{4,4,T,16} where {T}
-    Pxx, Pxy, Pyy = rotate3(e.power.xx, e.power.xy, e.power.yy, -e.incidence.θ)
+    Pxx, Pxy, Pyy = rotate_symmetric(e.power.xx, e.power.xy, e.power.yy, -e.incidence.θ)
 
     V = sqrt(e.n^2 - sin(e.incidence.ι)^2)
     W = (V * sec(e.incidence.ι) - 1) / (e.n - 1)
 
-    Mxx, Mxy, Myy = rotate3(
+    Mxx, Mxy, Myy = rotate_symmetric(
         -Pxx * W * sec(e.incidence.ι),
         -Pxy * W,
         -Pyy * W * cos(e.incidence.ι),

@@ -23,7 +23,7 @@ function OpticalPower(P_xx::Real, P_xy::Real, P_yy::Real)
 end
 
 function OpticalPower(Px::Real, Py::Real; φ::Real=0.0f0)
-    return OpticalPower(rotate2(
+    return OpticalPower(tensor_from_principal(
         Px,
         Py,
         convert(promote_type(typeof(Px), typeof(Py)), φ),

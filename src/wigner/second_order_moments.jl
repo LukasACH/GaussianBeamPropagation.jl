@@ -19,9 +19,9 @@ struct SecondOrderMoments{T}
 end
 
 function SecondOrderMoments(; rx, ry, φ_r, θx, θy, φ_θ, rθx, rθy, φ_rθ, twist)
-    rxrx, rxry, ryry = rotate2(rx, ry, φ_r)
-    θxθx, θxθy, θyθy = rotate2(θx, θy, φ_θ)
-    rxθx, rθavg, ryθy = rotate2(rθx, rθy, φ_rθ)
+    rxrx, rxry, ryry = tensor_from_principal(rx, ry, φ_r)
+    θxθx, θxθy, θyθy = tensor_from_principal(θx, θy, φ_θ)
+    rxθx, rθavg, ryθy = tensor_from_principal(rθx, rθy, φ_rθ)
     rxθy = rθavg + twist / 2
     ryθx = rθavg - twist / 2
     return SecondOrderMoments(rxrx, rxry, ryry, θxθx, θxθy, θyθy, rxθx, rxθy, ryθx, ryθy)
@@ -119,9 +119,9 @@ function SecondOrderMoments(
         throw(ArgumentError("insufficient parameters: each axis needs (z, zR), (w, r) or q"))
     end
 
-    rxrx, rxry, ryry = rotate2(rxrx_, ryry_, φ)
-    θxθx, θxθy, θyθy = rotate2(θxθx_, θyθy_, φ)
-    rxθx, rxθy, ryθy = rotate2(rxθx_, ryθy_, φ)
+    rxrx, rxry, ryry = tensor_from_principal(rxrx_, ryry_, φ)
+    θxθx, θxθy, θyθy = tensor_from_principal(θxθx_, θyθy_, φ)
+    rxθx, rxθy, ryθy = tensor_from_principal(rxθx_, ryθy_, φ)
     ryθx = rxθy
 
     return SecondOrderMoments(rxrx, rxry, ryry, θxθx, θxθy, θyθy, rxθx, rxθy, ryθx, ryθy)

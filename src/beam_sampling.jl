@@ -1,3 +1,7 @@
+# Map an orientation angle to [0, π) and [−π/2, π/2), respectively
+mod_pi(x) = mod2pi(2x) / 2
+mod_mpi2_pi2(x) = mod_pi(x + π / 2) - π / 2
+
 """
     unwrap(v::AbstractVector; range=2π)
 

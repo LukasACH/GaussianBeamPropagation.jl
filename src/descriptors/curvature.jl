@@ -51,7 +51,7 @@ Curvature(κ_xx::Real, κ_xy::Real, κ_yy::Real) =
     Curvature(promote(κ_xx, κ_xy, κ_yy)...)
 
 function Curvature(κx::Real, κy::Real; φ::Real=0.0f0)
-    return Curvature(rotate2(κx, κy, convert(promote_type(typeof(κx), typeof(κy)), φ))...)
+    return Curvature(tensor_from_principal(κx, κy, convert(promote_type(typeof(κx), typeof(κy)), φ))...)
 end
 
 Curvature(κ::Real) = Curvature(κ, κ)
