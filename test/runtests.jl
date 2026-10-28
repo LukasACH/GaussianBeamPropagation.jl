@@ -715,6 +715,25 @@ using StaticArrays
             end
         end
     end
+
+    @testset "Deprecation" begin
+        @testset "rtm property" begin
+            fs = FreeSpace(1)
+            @test (@test_deprecated fs.rtm) == get_transfer_matrix(fs)
+
+            i = OpticalInterface(Curvature(), 1.5)
+            @test (@test_deprecated i.rtm) == get_transfer_matrix(i)
+
+            m = Mirror(OpticalPower(1.0, 1.0))
+            @test (@test_deprecated m.rtm) == get_transfer_matrix(m)
+
+            l = ThinLens(OpticalPower(1.0, 1.0))
+            @test (@test_deprecated l.rtm) == get_transfer_matrix(l)
+
+            l2 = ThickLens(Curvature(), 1.0, Curvature(), 1.5)
+            @test (@test_deprecated l2.rtm) == get_transfer_matrix(l2)
+        end
+    end
 end
 #=
 @testset "2D matrices" begin
