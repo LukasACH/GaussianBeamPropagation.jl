@@ -7,6 +7,7 @@ include("tensors.jl")
 include("wigner/second_order_moments.jl")
 include("wigner/beam.jl")
 
+include("descriptors/symmetric_descriptor.jl")
 include("descriptors/curvature.jl")
 include("descriptors/optical_power.jl")
 include("descriptors/incidence_angle.jl")

@@ -33,65 +33,10 @@ Instead of providing the curvature in the principal directions with a rotation a
 
 The curvature _κ_ of a surface is the inverse of its radius of curvature _R_, such that _R_ ≡ _κ_⁻¹. It is given in units of inverse metre.
 """
-struct Curvature{T<:Real}
+struct Curvature{T<:Real} <: SymmetricDescriptor{T}
     xx::T
     xy::T
     yy::T
 end
 
-Base.convert(::Type{Curvature{T}}, κ::Curvature) where {T<:Real} =
-    Curvature{T}(κ)
-
-Curvature(κ::Curvature) = Curvature(κ.xx, κ.xy, κ.yy)
-
-Curvature{T}(κ::Curvature) where {T<:Real} =
-    Curvature{T}(T(κ.xx), T(κ.xy), T(κ.yy))
-
-Curvature(κ_xx::Real, κ_xy::Real, κ_yy::Real) =
-    Curvature(promote(κ_xx, κ_xy, κ_yy)...)
-
-function Curvature(κx::Real, κy::Real; φ::Real=0.0f0)
-    return Curvature(tensor_from_principal(κx, κy, convert(promote_type(typeof(κx), typeof(κy)), φ))...)
-end
-
-Curvature(κ::Real) = Curvature(κ, κ)
-Curvature() = Curvature(0.0f0)
-
-Base.:-(κ::Curvature) = Curvature(-κ.xx, -κ.xy, -κ.yy)
-
-function Base.:-(lhs::Curvature, rhs::Curvature)
-    return Curvature(lhs.xx - rhs.xx, lhs.xy - rhs.xy, lhs.yy - rhs.yy)
-end
-
-function Base.:+(lhs::Curvature, rhs::Curvature)
-    return Curvature(lhs.xx + rhs.xx, lhs.xy + rhs.xy, lhs.yy + rhs.yy)
-end
-
-Base.:*(a::Real, κ::Curvature) =
-    Curvature(a * κ.xx, a * κ.xy, a * κ.yy)
-
-Base.:*(κ::Curvature, a::Real) =
-    Curvature(a * κ.xx, a * κ.xy, a * κ.yy)
-
-Base.:/(κ::Curvature, a::Real) =
-    Curvature(κ.xx / a, κ.xy / a, κ.yy/a)
-
-function Base.show(io::IO, ::MIME"text/plain", κ::Curvature{T}) where {T}
-    x, y, φ = principal_axes(κ.xx, κ.xy, κ.yy)
-
-    return print(
-        io,
-        Base.repr(κ),
-        " with κx = ",
-        x,
-        " (Rx = ",
-        1/x,
-        "), κy = ",
-        y,
-        " (Ry = ",
-        1/y,
-        "), φ = ",
-        rad2deg(φ),
-        "°",
-    )
-end
+@symmetric_descriptor Curvature "κ" "R"
