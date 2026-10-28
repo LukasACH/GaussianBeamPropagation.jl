@@ -825,7 +825,7 @@ using Unitful
         ε2 = (λ / 4π)^2
         positions = collect(range(0.1, 2.0; length=8))
 
-        # Beam sizes and orientation at the given positions, in the layout expected by `propagation_fitting`
+        # Beam sizes and orientation at the given positions, in the layout expected by `fit_propagation`
         function measure(beam, positions; system=z -> FreeSpace(z))
             return reduce(
                 vcat, [(w=radius(system(z) * beam); [w[1] w[2] w[3] z]) for z in positions]
@@ -846,7 +846,7 @@ using Unitful
 
         fit(args...; kwargs...) =
         # with_logger(NullLogger()) do
-            propagation_fitting(args...; kwargs...)
+            fit_propagation(args...; kwargs...)
         # end
 
         function test_fit(beam, positions)
@@ -870,9 +870,9 @@ using Unitful
             return result
         end
 
-        @testset "observation" begin
+        @testset "moments_from_radius" begin
             wx, wy, φ = [2.0e-3, 1.5e-3], [1.0e-3, 1.0e-3], [0.4, -0.2]
-            xx, xy, yy = observation(wx, wy, φ)
+            xx, xy, yy = moments_from_radius(wx, wy, φ)
             for i in eachindex(wx)
                 @test radius(xx[i], xy[i], yy[i]) ≈ [wx[i], wy[i], φ[i]]
             end
@@ -973,6 +973,13 @@ using Unitful
                 mixed=PrincipalMoments(0.5, 0.1, 0.3),
                 twist=0.2,
             )
+        end
+
+        @testset "Fitting names" begin
+            @test (@test_deprecated observation([1e-3], [2e-3], [0.1])) ==
+                  moments_from_radius([1e-3], [2e-3], [0.1])
+            @test (@test_deprecated beam_fit_parameters(1e-6; radius=(1e-3, 2e-3, 3e-3))).initial ==
+                  beam_fit_parameters(1e-6; beam_radius=(1e-3, 2e-3, 3e-3)).initial
         end
 
         @testset "Beam field inner" begin
