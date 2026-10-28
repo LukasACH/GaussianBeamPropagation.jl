@@ -12,8 +12,6 @@ include("descriptors/optical_power.jl")
 include("descriptors/incidence_angle.jl")
 include("descriptors/deprecated.jl")
 
-include("utils2.jl")
-
 include("wigner/elements/abstract_element.jl")
 include("wigner/elements/matrix_element.jl")
 include("wigner/elements/free_space.jl")

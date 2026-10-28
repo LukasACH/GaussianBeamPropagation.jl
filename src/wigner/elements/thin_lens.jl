@@ -30,9 +30,7 @@ function ThinLens(
     n::Real,
     incidence::IncidenceAngle=IncidenceAngle(),
 )
-    P = (n - 1) * (front - back)
-
-    return ThinLens(OpticalPower(P.xx, P.xy, P.yy), n, incidence)
+    return ThinLens(lensmaker(front, back, n), n, incidence)
 end
 
 function get_transfer_matrix(e::ThinLens{T})::SMatrix{4,4,T,16} where {T}
