@@ -1,8 +1,12 @@
 @testset "Integration tests" begin
+    # Fig. 2 of K. Dupraz et al., Opt. Commun. 443, 172 (2019). Both cylindrical lenses are tilted
+    # by 10° in the same plane of incidence (θ = 0); the first lens is then rotated by 45° around
+    # its surface normal, which rotates its curvature (φ) but not the plane of incidence.
+    # The figure gives unlabelled radii read off the plot to about 0.01 mm, hence the atol.
     @testset "Dupraz et al. 2019" begin
         lens_thickness = 5.93e-3
         lens_curvature = 155.1e-3
-        lens_refractive_index = 1.5108
+        lens_refractive_index = 1.5108 # Schott N-BK7 at 800nm
         beam =
             FreeSpace(250e-3 - lens_thickness) *
                 ThickLens(
@@ -18,113 +22,79 @@
                     lens_thickness,
                     Curvature(),
                     lens_refractive_index, # Schott N-BK7 at 800nm
-                    IncidenceAngle(ι=deg2rad(10), θ=deg2rad(45)),
+                    IncidenceAngle(ι=deg2rad(10), θ=deg2rad(0)),
                 ) *
                 FreeSpace(100e-3) *
                 Beam(800e-9, BeamRadius(10e-3), BeamRadius(10e-3); φ=0.0)
-        @test radius(beam)[2] ≈ 7.235348837209305e-3 rtol=0.02 skip=false
-        @test radius(beam)[1] ≈ 5.3600000000000065e-3 rtol=0.02 skip=false
+
+        @test radius(beam)[2] ≈ 7.23e-3 rtol=0.005 atol=0.02e-3
+        @test radius(beam)[1] ≈ 5.36e-3 rtol=0.005 atol=0.02e-3
 
         beam_p100 = FreeSpace(100e-3) * beam
-        @test radius(beam_p100)[1] ≈ 10.973023255813956e-3 rtol=0.02 skip=false
-        @test radius(beam_p100)[2] ≈ 5.5944186046511675e-3 rtol=0.02 skip=false
+        @test radius(beam_p100)[1] ≈ 10.97e-3 rtol=0.005 atol=0.02e-3
+        @test radius(beam_p100)[2] ≈ 5.59e-3 rtol=0.005 atol=0.02e-3
 
         beam_p200 = FreeSpace(200e-3) * beam
-        @test radius(beam_p200)[1] ≈ 16.039069767441863e-3 rtol=0.02 skip=false
-        @test radius(beam_p200)[2] ≈ 4.539534883720936e-3 rtol=0.02 skip=true
+        @test radius(beam_p200)[1] ≈ 16.04e-3 rtol=0.005 atol=0.02e-3
+        @test radius(beam_p200)[2] ≈ 4.53e-3 rtol=0.005 atol=0.02e-3
 
         beam_m100 = FreeSpace(-100e-3) * beam
-        @test radius(beam_m100)[2] ≈ 8.081860465116284e-3 rtol=0.02 skip=false
-        @test radius(beam_m100)[1] ≈ 0.5544186046511648e-3 rtol=0.02 skip=true
+        @test radius(beam_m100)[2] ≈ 8.08e-3 rtol=0.005 atol=0.02e-3
+        @test radius(beam_m100)[1] ≈ 0.55e-3 rtol=0.005 atol=0.02e-3
 
         beam_m200 = FreeSpace(-200e-3) * beam
-        @test radius(beam_m200)[2] ≈ 9.293023255813958e-3 rtol=0.02 skip=false
-        @test radius(beam_m200)[1] ≈ 4.4093023255814e-3 rtol=0.02 skip=false
+        @test radius(beam_m200)[2] ≈ 9.29e-3 rtol=0.005 atol=0.02e-3
+        @test radius(beam_m200)[1] ≈ 4.41e-3 rtol=0.005 atol=0.02e-3
 
-        beam_waist = FreeSpace(-112e-3) * beam
-        @test radius(beam_waist)[1] ≈ 0.0 atol=0.000001 skip=true
-
-        # @info "" rms=sqrt(
-        #     mapreduce(
-        #         x->x^2,
-        #         +,
-        #         [
-        #             radius(beam)[1] - 7.235348837209305e-3,
-        #             radius(beam)[2] - 5.3600000000000065e-3,
-        #             radius(beam_p100)[1] - 10.973023255813956e-3,
-        #             radius(beam_p100)[2] - 5.5944186046511675e-3,
-        #             radius(beam_p200)[1] - 16.039069767441863e-3,
-        #             radius(beam_p200)[2] - 4.539534883720936e-3,
-        #             radius(beam_m100)[1] - 8.081860465116284e-3,
-        #             radius(beam_m100)[2] - 0.5544186046511648e-3,
-        #             radius(beam_m200)[1] - 9.293023255813958e-3,
-        #             radius(beam_m200)[2] - 4.4093023255814e-3,
-        #         ],
-        #     ),
-        # )
+        beam_waist = FreeSpace(-111.2e-3) * beam
+        @test radius(beam_waist)[1] ≈ 0 atol=0.02e-3
     end
 
+    # The same system with each lens replaced by a thin lens behind its reduced thickness
     @testset "Dupraz et al. 2019 simple" begin
         lens_thickness = 5.93e-3
         lens_curvature = 155.1e-3
-        lens_refractive_index = 1.5108
+        lens_refractive_index = 1.5108 # Schott N-BK7 at 800nm
+        lens_power = (lens_refractive_index - 1) / lens_curvature
         beam =
             FreeSpace(250e-3 - lens_thickness) *
-                FreeSpace(lens_thickness/1.5168) *
+                FreeSpace(lens_thickness/lens_refractive_index) *
                 ThinLens(
-                    OpticalPower(1/0.30012, 0; φ=deg2rad(0)),
+                    OpticalPower(lens_power, 0; φ=deg2rad(0)),
                     lens_refractive_index,
                     IncidenceAngle(; ι=deg2rad(10), θ=deg2rad(0)),
                 ) *
                 FreeSpace(100e-3 - lens_thickness) *
-                FreeSpace(lens_thickness/1.5168) *
+                FreeSpace(lens_thickness/lens_refractive_index) *
                 ThinLens(
-                    OpticalPower(1/0.30012, 0; φ=deg2rad(45)),
+                    OpticalPower(lens_power, 0; φ=deg2rad(45)),
                     lens_refractive_index,
-                    IncidenceAngle(; ι=deg2rad(10), θ=deg2rad(45)),
+                    IncidenceAngle(; ι=deg2rad(10), θ=deg2rad(0)),
                 ) *
                 FreeSpace(100e-3) *
                 Beam(800e-9, BeamRadius(10e-3), BeamRadius(10e-3); φ=0.0)
-        @test radius(beam)[1]≈7.235348837209305e-3 rtol=0.01 skip=true
-        @test radius(beam)[2]≈5.3600000000000065e-3 rtol=0.01 skip=true
+
+        @test radius(beam)[2] ≈ 7.23e-3 rtol=0.005 atol=0.02e-3
+        @test radius(beam)[1] ≈ 5.36e-3 rtol=0.005 atol=0.02e-3
 
         beam_p100 = FreeSpace(100e-3) * beam
-        @test radius(beam_p100)[1]≈10.973023255813956e-3 rtol=0.01 skip=true
-        @test radius(beam_p100)[2]≈5.5944186046511675e-3 rtol=0.01 skip=true
+        @test radius(beam_p100)[1] ≈ 10.97e-3 rtol=0.005 atol=0.02e-3
+        @test radius(beam_p100)[2] ≈ 5.59e-3 rtol=0.005 atol=0.02e-3
 
         beam_p200 = FreeSpace(200e-3) * beam
-        @test radius(beam_p200)[1]≈16.039069767441863e-3 rtol=0.01 skip=true
-        @test radius(beam_p200)[2]≈4.539534883720936e-3 rtol=0.01 skip=true
+        @test radius(beam_p200)[1] ≈ 16.04e-3 rtol=0.005 atol=0.02e-3
+        @test radius(beam_p200)[2] ≈ 4.53e-3 rtol=0.005 atol=0.02e-3
 
         beam_m100 = FreeSpace(-100e-3) * beam
-        @test radius(beam_m100)[1]≈8.081860465116284e-3 rtol=0.01 skip=true
-        @test radius(beam_m100)[2]≈0.5544186046511648e-3 rtol=0.01 skip=true
+        @test radius(beam_m100)[2] ≈ 8.08e-3 rtol=0.005 atol=0.02e-3
+        @test radius(beam_m100)[1] ≈ 0.55e-3 rtol=0.005 atol=0.02e-3
 
         beam_m200 = FreeSpace(-200e-3) * beam
-        @test radius(beam_m200)[1]≈9.293023255813958e-3 rtol=0.01 skip=true
-        @test radius(beam_m200)[2]≈4.4093023255814e-3 rtol=0.01 skip=true
+        @test radius(beam_m200)[2] ≈ 9.29e-3 rtol=0.005 atol=0.02e-3
+        @test radius(beam_m200)[1] ≈ 4.41e-3 rtol=0.005 atol=0.02e-3
 
-        # beam_waist = FreeSpace(-109e-3) * beam
-        # @test radius(beam_waist)[2] ≈ 0.0 atol=0.000001
-
-        # @info "" rms=sqrt(
-        #     mapreduce(
-        #         x->x^2,
-        #         +,
-        #         [
-        #             radius(beam)[1] - 7.235348837209305e-3,
-        #             radius(beam)[2] - 5.3600000000000065e-3,
-        #             radius(beam_p100)[1] - 10.973023255813956e-3,
-        #             radius(beam_p100)[2] - 5.5944186046511675e-3,
-        #             radius(beam_p200)[1] - 16.039069767441863e-3,
-        #             radius(beam_p200)[2] - 4.539534883720936e-3,
-        #             radius(beam_m100)[1] - 8.081860465116284e-3,
-        #             radius(beam_m100)[2] - 0.5544186046511648e-3,
-        #             radius(beam_m200)[1] - 9.293023255813958e-3,
-        #             radius(beam_m200)[2] - 4.4093023255814e-3,
-        #         ],
-        #     ),
-        # )
+        beam_waist = FreeSpace(-111.2e-3) * beam
+        @test radius(beam_waist)[1] ≈ 0 atol=0.02e-3
     end
 
     @testset "ThinLens" begin
