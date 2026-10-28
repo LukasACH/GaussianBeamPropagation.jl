@@ -297,6 +297,25 @@ using StaticArrays
             end
         end
 
+        @testset "Radius along a direction" begin
+            λ = 632.8e-9
+            beam = Beam(λ; wx=2e-3, wy=1e-3, rx=Inf, ry=Inf, φ=deg2rad(20))
+
+            # Along the principal axes, the radii are the principal radii
+            @test radius(beam, deg2rad(20)) ≈ [2e-3, 1e-3]
+            @test radius(beam, deg2rad(110)) ≈ [1e-3, 2e-3]
+
+            # In between, the second moment (not the radius) interpolates
+            α = deg2rad(30)
+            @test radius(beam, deg2rad(20) + α) ≈
+                  [sqrt((2e-3 * cos(α))^2 + (1e-3 * sin(α))^2),
+                   sqrt((2e-3 * sin(α))^2 + (1e-3 * cos(α))^2)]
+        end
+
+        @testset "Insufficient parameters" begin
+            @test_throws ArgumentError Beam(632.8e-9; wx=1e-3, wy=1e-3)
+        end
+
         @testset "Mirror" begin
             @testset "Simple mirror" begin
                 λ = 632.8e-9
