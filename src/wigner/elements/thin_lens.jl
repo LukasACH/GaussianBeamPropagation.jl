@@ -18,11 +18,11 @@ struct ThinLens{T<:AbstractFloat} <: AbstractElement
         n::B,
         incidence::IncidenceAngle{C},
     ) where {A<:Real,B<:Real,C<:Real}
-        return new{promote_type(A, B, C)}(n, power, incidence)
+        return new{float(promote_type(A, B, C))}(n, power, incidence)
     end
 end
 
-ThinLens(power::OpticalPower{T}) where {T} = ThinLens(power, T(3//2), IncidenceAngle{T}())
+ThinLens(power::OpticalPower{T}) where {T} = ThinLens(power, float(T)(3//2), IncidenceAngle{T}())
 
 function ThinLens(
     front::Curvature,

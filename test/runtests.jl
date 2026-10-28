@@ -368,6 +368,11 @@ using StaticArrays
                 ]
             end
 
+            @testset "Integer input" begin
+                @test Mirror(Curvature(1, 0, 1)) isa Mirror{Float64}
+                @test ThinLens(OpticalPower(1, 0, 1)) isa ThinLens{Float64}
+            end
+
             @testset "Free Space" begin
                 L = 1.5
                 free_space = FreeSpace(L)

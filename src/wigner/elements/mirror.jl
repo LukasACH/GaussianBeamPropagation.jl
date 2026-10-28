@@ -15,7 +15,7 @@ struct Mirror{T<:AbstractFloat} <: AbstractElement
         surface::Curvature{A},
         incidence::IncidenceAngle{B}=IncidenceAngle(),
     ) where {A<:Real,B<:Real}
-        return new{promote_type(A, B)}(surface, incidence)
+        return new{float(promote_type(A, B))}(surface, incidence)
     end
 end
 
