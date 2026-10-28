@@ -385,6 +385,14 @@ using StaticArrays
                 ]
             end
 
+            @testset "Powers" begin
+                lens = ThinLens(OpticalPower(2.0, 1.0; φ=0.3))
+                @test get_transfer_matrix(lens^0) ≈ one(SMatrix{4,4,Float64})
+                @test get_transfer_matrix(lens^1) ≈ get_transfer_matrix(lens)
+                @test get_transfer_matrix(lens^3) ≈ get_transfer_matrix(lens * lens * lens)
+                @test get_transfer_matrix(FreeSpace(1.0)^-2) ≈ get_transfer_matrix(FreeSpace(-2.0))
+            end
+
             @testset "Integer input" begin
                 @test Mirror(Curvature(1, 0, 1)) isa Mirror{Float64}
                 @test ThinLens(OpticalPower(1, 0, 1)) isa ThinLens{Float64}
