@@ -184,6 +184,13 @@
                 get_transfer_matrix(Mirror(OpticalPower(2.0)))
         end
 
+        @testset "Curvature sign" begin
+            # A surface convex towards the beam (center of curvature after it) focuses
+            @test get_transfer_matrix(OpticalInterface(Curvature(1.0), 1.5))[3, 1] < 0
+            @test get_transfer_matrix(ThinLens(Curvature(1.0), Curvature(-1.0), 1.5))[3, 1] < 0
+            @test get_transfer_matrix(ThickLens(Curvature(1.0), 0.01, Curvature(-1.0), 1.5))[3, 1] < 0
+        end
+
         @testset "Powers" begin
             lens = ThinLens(OpticalPower(2.0, 1.0; φ=0.3))
             @test get_transfer_matrix(lens^0) ≈ one(SMatrix{4,4,Float64})

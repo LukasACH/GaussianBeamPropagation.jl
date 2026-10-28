@@ -5,8 +5,9 @@
     ThinLens(front::Curvature, back::Curvature, n::Real, incidence::IncidenceAngle)
 
 The zero-thickness approximation of the thick lens. The oblique astigmatism depends on the refractive indices of the
-lens material and the surrounding medium, which are given as a single ratio of internal / external, and the incidence angles are given by `IncidenceAngle`. The focussing of the lens can either be given as `RadiusOfCurvature`,
-`FocalLength`, or `FocalPower`.
+lens material and the surrounding medium, which are given as a single ratio of internal / external, and the incidence angles are given by `IncidenceAngle`. The focussing of the lens can either be given as an [`OpticalPower`](@ref), or
+by the [`Curvature`](@ref) of its front and back surfaces, which gives the optical power _P_ = (_n_ − 1)(_κ_front − _κ_back).
+A positive optical power focuses the beam.
 """
 struct ThinLens{T<:AbstractFloat} <: AbstractElement
     n::T

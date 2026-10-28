@@ -10,7 +10,7 @@
         beam =
             FreeSpace(250e-3 - lens_thickness) *
                 ThickLens(
-                    Curvature(1/(-lens_curvature), 0; φ=deg2rad(0)),
+                    Curvature(1/lens_curvature, 0; φ=deg2rad(0)),
                     lens_thickness,
                     Curvature(),
                     lens_refractive_index, # Schott N-BK7 at 800nm
@@ -18,7 +18,7 @@
                 ) *
                 FreeSpace(100e-3 - lens_thickness) *
                 ThickLens(
-                    Curvature(1/(-lens_curvature), 0; φ=deg2rad(45)),
+                    Curvature(1/lens_curvature, 0; φ=deg2rad(45)),
                     lens_thickness,
                     Curvature(),
                     lens_refractive_index, # Schott N-BK7 at 800nm
@@ -158,8 +158,8 @@
     @testset "ThinLens vs Thicklens" begin
         lens_thickness = 5.93e-3
         lens_curvature = 155.1e-3
-        lens_refractive_index = 1.5168
-        lens_focal_length = 0.30012
+        lens_refractive_index = 1.5168 # Schott N-BK7 at 587.6nm
+        lens_power = (lens_refractive_index - 1) / lens_curvature
 
         @testset "Different refractive index outside" begin
             medium_refractive_index = 1.5
@@ -167,7 +167,7 @@
             n = lens_refractive_index / medium_refractive_index
 
             thick_front = ThickLens(
-                Curvature(-1/lens_curvature, 0; φ=0),
+                Curvature(1/lens_curvature, 0; φ=0),
                 lens_thickness,
                 Curvature(),
                 n,
@@ -182,7 +182,7 @@
             thick_back = ThickLens(
                 Curvature(),
                 lens_thickness,
-                Curvature(1/lens_curvature, 0; φ=0),
+                Curvature(-1/lens_curvature, 0; φ=0),
                 n,
             )
             thin_back =
@@ -193,16 +193,16 @@
                 0.00001
         end
 
-        @testset "Zero indcidence angle" begin
+        @testset "Zero incidence angle" begin
             thick_front = ThickLens(
-                Curvature(-1/lens_curvature, 0; φ=0),
+                Curvature(1/lens_curvature, 0; φ=0),
                 lens_thickness,
                 Curvature(),
-                lens_refractive_index, # Schott N-BK7 at 800nm
+                lens_refractive_index,
             )
             thin_front =
                 FreeSpace(lens_thickness/lens_refractive_index) *
-                    ThinLens(OpticalPower(1/lens_focal_length, 0))
+                    ThinLens(OpticalPower(lens_power, 0))
 
             @test get_transfer_matrix(thin_front) ≈ get_transfer_matrix(thick_front) rtol =
                 0.00002
@@ -210,13 +210,13 @@
             thick_back = ThickLens(
                 Curvature(),
                 lens_thickness,
-                Curvature(1/lens_curvature, 0; φ=0),
-                lens_refractive_index, # Schott N-BK7 at 800nm
+                Curvature(-1/lens_curvature, 0; φ=0),
+                lens_refractive_index,
             )
             thin_back =
                 ThinLens(
-                    OpticalPower(1/lens_focal_length, 0),
-                    1.5,
+                    OpticalPower(lens_power, 0),
+                    lens_refractive_index,
                     IncidenceAngle(; ι=0, θ=0),
                 ) * FreeSpace(lens_thickness/lens_refractive_index)
 
@@ -224,43 +224,48 @@
                 0.00002
         end
 
-        @testset "Non-zero indcidence angle" begin
-            φ = deg2rad(0)
+        @testset "Non-zero incidence angle" begin
+            ι = deg2rad(10)
 
-            ι = deg2rad(0)
+            # Curvature rotated against the plane of incidence
+            φ = deg2rad(30)
             θ = deg2rad(0)
 
             thick_front = ThickLens(
-                Curvature(-1/lens_curvature, 0; φ),
+                Curvature(1/lens_curvature, 0; φ),
                 lens_thickness,
                 Curvature(),
-                lens_refractive_index, # Schott N-BK7 at 800nm
+                lens_refractive_index,
                 IncidenceAngle(; ι, θ),
             )
             thin_front =
                 FreeSpace(lens_thickness/lens_refractive_index) * ThinLens(
-                    OpticalPower(1/lens_focal_length, 0; φ),
-                    lens_refractive_index, # Schott N-BK7 at 800nm
+                    OpticalPower(lens_power, 0; φ),
+                    lens_refractive_index,
                     IncidenceAngle(; ι, θ),
                 )
 
-            @test get_transfer_matrix(thin_front) ≈ get_transfer_matrix(thick_front) rtol=0.001 atol=1e-10
+            @test get_transfer_matrix(thin_front) ≈ get_transfer_matrix(thick_front) rtol=0.0001
+
+            # Plane of incidence rotated against the curvature
+            φ = deg2rad(0)
+            θ = deg2rad(45)
 
             thick_back = ThickLens(
                 Curvature(),
                 lens_thickness,
-                Curvature(1/lens_curvature, 0; φ=deg2rad(0)),
-                lens_refractive_index, # Schott N-BK7 at 800nm
-                IncidenceAngle(; ι, θ=deg2rad(45)),
+                Curvature(-1/lens_curvature, 0; φ),
+                lens_refractive_index,
+                IncidenceAngle(; ι, θ),
             )
             thin_back =
                 ThinLens(
-                    OpticalPower(1/lens_focal_length, 0),
-                    1.5,
-                    IncidenceAngle(; ι, θ=deg2rad(45)),
+                    OpticalPower(lens_power, 0; φ),
+                    lens_refractive_index,
+                    IncidenceAngle(; ι, θ),
                 ) * FreeSpace(lens_thickness/lens_refractive_index)
 
-            @test get_transfer_matrix(thin_back) ≈ get_transfer_matrix(thick_back) rtol=0.001 atol=1e-10
+            @test get_transfer_matrix(thin_back) ≈ get_transfer_matrix(thick_back) rtol=0.0001
         end
     end
 end
