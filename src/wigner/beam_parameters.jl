@@ -14,8 +14,8 @@ In that case, the return value is a `SVector` with only two elements, the radius
 
 It uses a right-handed coordinate system.
 """
-radius(beam::Beam) = radius(beam.inner)
-radius(beam::Beam, φ::Real) = radius(beam.inner, φ)
+radius(beam::Beam) = radius(beam.moments)
+radius(beam::Beam, φ::Real) = radius(beam.moments, φ)
 
 """
     divergence(::Beam)
@@ -27,7 +27,7 @@ The axes and the angle follow the same convention as [`radius`](@ref): _φ_ ∈ 
 
 It uses a right-handed coordinate system.
 """
-divergence(beam::Beam) = divergence(beam.inner)
+divergence(beam::Beam) = divergence(beam.moments)
 
 """
     phase_curvature(::Beam)
@@ -39,7 +39,7 @@ The axes and the angle follow the same convention as [`radius`](@ref): _φ_ ∈ 
 
 It uses a right-handed coordinate system.
 """
-phase_curvature(beam::Beam) = phase_curvature(beam.inner)
+phase_curvature(beam::Beam) = phase_curvature(beam.moments)
 
 """
     twist(::Beam)
@@ -48,7 +48,7 @@ phase_curvature(beam::Beam) = phase_curvature(beam.inner)
 Calculates the twist from a `Beam` or `SecondOrderMoments`.
 The return value is a single `Float64` in units of metres²/radians².
 """
-twist(beam::Beam) = twist(beam.inner)
+twist(beam::Beam) = twist(beam.moments)
 
 function radius(som::SecondOrderMoments)
     return radius(som.rxrx, som.rxry, som.ryry)

@@ -1,9 +1,33 @@
 """
-    SecondOrderMoments(; 
-        rxrx, rxry, ryry,
-        θxθx, θxθy, θyθy,
-        rxθx, rxθy, ryθx, ryθy,
-    )
+    PrincipalMoments(x, y=x, φ=0)
+
+Second moments `x` and `y` along two principal axes, which are rotated by `φ` relative to the
+_x_ and _y_ directions. Used to build [`SecondOrderMoments`](@ref).
+"""
+struct PrincipalMoments{T<:Real}
+    x::T
+    y::T
+    φ::T
+end
+
+PrincipalMoments(x::Real, y::Real=x, φ::Real=0) = PrincipalMoments(promote(x, y, φ)...)
+
+"""
+    SecondOrderMoments(; spatial::PrincipalMoments, angular::PrincipalMoments,
+                         mixed::PrincipalMoments=PrincipalMoments(0.0), twist=0.0)
+    SecondOrderMoments(rxrx, rxry, ryry, θxθx, θxθy, θyθy, rxθx, rxθy, ryθx, ryθy)
+    SecondOrderMoments(matrix::SMatrix{4,4})
+    SecondOrderMoments(beam::Beam)
+
+The second-order moments of a beam: the spatial moments ``⟨x²⟩, ⟨xy⟩, ⟨y²⟩`` (`rxrx`, `rxry`,
+`ryry`), the angular moments ``⟨θx²⟩, ⟨θxθy⟩, ⟨θy²⟩`` (`θxθx`, `θxθy`, `θyθy`) and the mixed
+moments ``⟨xθx⟩, ⟨xθy⟩, ⟨yθx⟩, ⟨yθy⟩`` (`rxθx`, `rxθy`, `ryθx`, `ryθy`).
+
+They can be given directly, as the symmetric 4×4 matrix of moments in the order
+`(x, y, θx, θy)`, or by the principal axes of the spatial, angular and mixed moments together
+with the `twist`, the antisymmetric part of the mixed moments.
+
+The moments do not depend on the wavelength. A beam with a wavelength is a [`Beam`](@ref).
 """
 struct SecondOrderMoments{T}
     rxrx::T
@@ -18,111 +42,76 @@ struct SecondOrderMoments{T}
     ryθy::T
 end
 
-function SecondOrderMoments(; rx, ry, φ_r, θx, θy, φ_θ, rθx, rθy, φ_rθ, twist)
-    rxrx, rxry, ryry = tensor_from_principal(rx, ry, φ_r)
-    θxθx, θxθy, θyθy = tensor_from_principal(θx, θy, φ_θ)
-    rxθx, rθavg, ryθy = tensor_from_principal(rθx, rθy, φ_rθ)
+function SecondOrderMoments(;
+    spatial::Union{PrincipalMoments,Nothing}=nothing,
+    angular::Union{PrincipalMoments,Nothing}=nothing,
+    mixed::PrincipalMoments=PrincipalMoments(0.0),
+    twist::Real=0.0,
+    kwargs...,
+)
+    if !isempty(kwargs)
+        Base.depwarn(
+            "SecondOrderMoments(; rx, ry, φ_r, θx, θy, φ_θ, rθx, rθy, φ_rθ, twist) is deprecated, " *
+            "use SecondOrderMoments(; spatial=PrincipalMoments(rx, ry, φ_r), " *
+            "angular=PrincipalMoments(θx, θy, φ_θ), mixed=PrincipalMoments(rθx, rθy, φ_rθ), twist) instead.",
+            :SecondOrderMoments,
+        )
+        (; rx, ry, φ_r, θx, θy, φ_θ, rθx, rθy, φ_rθ) = (; kwargs...)
+        spatial = PrincipalMoments(rx, ry, φ_r)
+        angular = PrincipalMoments(θx, θy, φ_θ)
+        mixed = PrincipalMoments(rθx, rθy, φ_rθ)
+    end
+    (isnothing(spatial) || isnothing(angular)) &&
+        throw(ArgumentError("the spatial and angular moments are required"))
+
+    rxrx, rxry, ryry = tensor_from_principal(spatial.x, spatial.y, spatial.φ)
+    θxθx, θxθy, θyθy = tensor_from_principal(angular.x, angular.y, angular.φ)
+    rxθx, rθavg, ryθy = tensor_from_principal(mixed.x, mixed.y, mixed.φ)
     rxθy = rθavg + twist / 2
     ryθx = rθavg - twist / 2
+    return SecondOrderMoments(promote(rxrx, rxry, ryry, θxθx, θxθy, θyθy, rxθx, rxθy, ryθx, ryθy)...)
+end
+
+function SecondOrderMoments(matrix::SMatrix{4,4,F,16}) where {F}
+    rxrx = matrix[1, 1]
+    rxry = (matrix[1, 2] + matrix[2, 1]) / 2
+    ryry = matrix[2, 2]
+
+    θxθx = matrix[3, 3]
+    θxθy = (matrix[3, 4] + matrix[4, 3]) / 2
+    θyθy = matrix[4, 4]
+
+    rxθx = (matrix[1, 3] + matrix[3, 1]) / 2
+    rxθy = (matrix[1, 4] + matrix[4, 1]) / 2
+    ryθx = (matrix[2, 3] + matrix[3, 2]) / 2
+    ryθy = (matrix[2, 4] + matrix[4, 2]) / 2
+
     return SecondOrderMoments(rxrx, rxry, ryry, θxθx, θxθy, θyθy, rxθx, rxθy, ryθx, ryθy)
 end
 
-function SecondOrderMoments(rtm::SMatrix{4,4,F,16}) where {F}
-    rxrx = rtm[1, 1]
-    rxry = (rtm[1, 2] + rtm[2, 1]) / 2
-    ryry = rtm[2, 2]
+"""
+    moment_matrix(moments::SecondOrderMoments)
+    moment_matrix(beam::Beam)
 
-    θxθx = rtm[3, 3]
-    θxθy = (rtm[3, 4] + rtm[4, 3]) / 2
-    θyθy = rtm[4, 4]
-
-    rxθx = (rtm[1, 3] + rtm[3, 1]) / 2
-    rxθy = (rtm[1, 4] + rtm[4, 1]) / 2
-    ryθx = (rtm[2, 3] + rtm[3, 2]) / 2
-    ryθy = (rtm[2, 4] + rtm[4, 2]) / 2
-
-    return SecondOrderMoments(rxrx, rxry, ryry, θxθx, θxθy, θyθy, rxθx, rxθy, ryθx, ryθy)
+The symmetric 4×4 matrix of second-order moments in the order `(x, y, θx, θy)`.
+"""
+function moment_matrix(som::SecondOrderMoments{F}) where {F}
+    return SA{F}[
+        som.rxrx som.rxry som.rxθx som.rxθy;
+        som.rxry som.ryry som.ryθx som.ryθy;
+        som.rxθx som.ryθx som.θxθx som.θxθy;
+        som.rxθy som.ryθy som.θxθy som.θyθy;
+    ]
 end
 
-function WSOM_from_Q(λ::Real, q::Union{Complex,Missing})
-    ismissing(q) && return missing
-
-    ε = λ / 4π
-
-    rr = ε * abs2(q) / imag(q)
-    rθ = ε * real(q) / imag(q)
-    θθ = ε / imag(q)
-
-    return rr, rθ, θθ
+function Base.isapprox(a::SecondOrderMoments, b::SecondOrderMoments; kwargs...)
+    return isapprox(moment_matrix(a), moment_matrix(b); kwargs...)
 end
 
-function WSOM_from_z_zR(λ::Real, z::Union{Real,Missing}, zR::Union{Real,Missing})
-    (ismissing(z) || ismissing(zR)) && return missing
-
-    ε = λ / 4π
-
-    rr = ε * (z^2 / zR + zR)
-    rθ = ε * z / zR
-    θθ = ε / zR
-
-    return rr, rθ, θθ
-end
-
-function WSOM_from_w_r(λ::Real, w::Union{Real,Missing}, r::Union{Real,Missing})
-    (ismissing(w) || ismissing(r)) && return missing
-
-    ε = λ / 4π
-
-    w2 = (w / 2)^2
-
-    rr = w2
-    rθ = w2 / r
-    θθ = w2 / r^2 + ε^2 / w2
-
-    return rr, rθ, θθ
-end
-
-function SecondOrderMoments(
-    λ::Real;
-    zx::Union{Real,Missing}=missing,
-    zRx::Union{Real,Missing}=missing,
-    zy::Union{Real,Missing}=missing,
-    zRy::Union{Real,Missing}=missing,
-    wx::Union{Real,Missing}=missing,
-    wy::Union{Real,Missing}=missing,
-    rx::Union{Real,Missing}=missing,
-    ry::Union{Real,Missing}=missing,
-    qx::Union{Complex,Missing}=missing,
-    qy::Union{Complex,Missing}=missing,
-    φ::Real=0.0,
-)
-    rxrx_, rxθx_, θxθx_ = ifelse(
-        !ismissing(zx) && !ismissing(zRx),
-        WSOM_from_z_zR(λ, zx, zRx),
-        ifelse(
-            !ismissing(wx) && !ismissing(rx),
-            WSOM_from_w_r(λ, wx, rx),
-            ifelse(!ismissing(qx), WSOM_from_Q(λ, qx), (missing, missing, missing)),
-        ),
+function SecondOrderMoments(λ::Real; kwargs...)
+    Base.depwarn(
+        "SecondOrderMoments(λ; …) is deprecated, use Beam(λ, x, y; φ).moments instead.",
+        :SecondOrderMoments,
     )
-    ryry_, ryθy_, θyθy_ = ifelse(
-        !ismissing(zy) && !ismissing(zRy),
-        WSOM_from_z_zR(λ, zy, zRy),
-        ifelse(
-            !ismissing(wy) && !ismissing(ry),
-            WSOM_from_w_r(λ, wy, ry),
-            ifelse(!ismissing(qy), WSOM_from_Q(λ, qy), (missing, missing, missing)),
-        ),
-    )
-
-    if ismissing(rxrx_) || ismissing(ryry_) || ismissing(θxθx_) || ismissing(θyθy_)
-        throw(ArgumentError("insufficient parameters: each axis needs (z, zR), (w, r) or q"))
-    end
-
-    rxrx, rxry, ryry = tensor_from_principal(rxrx_, ryry_, φ)
-    θxθx, θxθy, θyθy = tensor_from_principal(θxθx_, θyθy_, φ)
-    rxθx, rxθy, ryθy = tensor_from_principal(rxθx_, ryθy_, φ)
-    ryθx = rxθy
-
-    return SecondOrderMoments(rxrx, rxry, ryry, θxθx, θxθy, θyθy, rxθx, rxθy, ryθx, ryθy)
+    return Beam(λ; kwargs...).moments
 end

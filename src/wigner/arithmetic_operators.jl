@@ -1,7 +1,6 @@
 function Base.:*(M::AbstractElement, beam::Beam)
-    M_rtm=get_transfer_matrix(M)
-    beam_matrix = generate_wigner_matrix(beam.inner)
-    return Beam(beam.λ, M_rtm * beam_matrix * M_rtm')
+    T = get_transfer_matrix(M)
+    return Beam(beam.λ, T * moment_matrix(beam) * T')
 end
 
 function Base.:*(Mlhs::AbstractElement, Mrhs::AbstractElement)

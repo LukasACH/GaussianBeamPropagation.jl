@@ -3,48 +3,56 @@ module UnitfulExt
 using GaussianBeamPropagation
 using Unitful
 
-GaussianBeamPropagation.OpticalPower(P_xx::Quantity{<:Real,Unitful.𝐋^-1}, P_xy::Quantity{<:Real,Unitful.𝐋^-1}, P_yy::Quantity{<:Real,Unitful.𝐋^-1}) =
+const Length = Quantity{<:Real,Unitful.𝐋}
+const InverseLength = Quantity{<:Real,Unitful.𝐋^-1}
+
+# Lengths are given in metres inside the package
+metres(x) = x isa Quantity ? ustrip(u"m", x) : x
+
+GaussianBeamPropagation.OpticalPower(P_xx::InverseLength, P_xy::InverseLength, P_yy::InverseLength) =
     OpticalPower(ustrip(u"m^-1", P_xx), ustrip(u"m^-1", P_xy), ustrip(u"m^-1", P_yy))
 
-GaussianBeamPropagation.OpticalPower(Px::Quantity{<:Real,Unitful.𝐋^-1}, Py::Quantity{<:Real,Unitful.𝐋^-1}; φ::Real=0.0f0) =
+GaussianBeamPropagation.OpticalPower(Px::InverseLength, Py::InverseLength; φ::Real=0.0f0) =
     OpticalPower(ustrip(u"m^-1", Px), ustrip(u"m^-1", Py); φ)
 
-GaussianBeamPropagation.OpticalPower(P::Quantity{<:Real,Unitful.𝐋^-1}) = OpticalPower(ustrip(u"m^-1", P))
+GaussianBeamPropagation.OpticalPower(P::InverseLength) = OpticalPower(ustrip(u"m^-1", P))
 
-GaussianBeamPropagation.Curvature(κ_xx::Quantity{<:Real,Unitful.𝐋^-1}, κ_xy::Quantity{<:Real,Unitful.𝐋^-1}, κ_yy::Quantity{<:Real,Unitful.𝐋^-1}) =
+GaussianBeamPropagation.Curvature(κ_xx::InverseLength, κ_xy::InverseLength, κ_yy::InverseLength) =
     Curvature(ustrip(u"m^-1", κ_xx), ustrip(u"m^-1", κ_xy), ustrip(u"m^-1", κ_yy))
 
-GaussianBeamPropagation.Curvature(κx::Quantity{A,Unitful.𝐋^-1}, κy::Quantity{B,Unitful.𝐋^-1}; φ::Real=0.0f0) where {A<:Real,B<:Real} =
+GaussianBeamPropagation.Curvature(κx::InverseLength, κy::InverseLength; φ::Real=0.0f0) =
     Curvature(ustrip(u"m^-1", κx), ustrip(u"m^-1", κy); φ)
 
-GaussianBeamPropagation.Curvature(κ::Quantity{<:Real,Unitful.𝐋^-1}) = Curvature(ustrip(u"m^-1", κ))
+GaussianBeamPropagation.Curvature(κ::InverseLength) = Curvature(ustrip(u"m^-1", κ))
 
-function GaussianBeamPropagation.tensor_from_principal(
-    x::Quantity{<:Real,D}, y::Quantity{<:Real,D}, α::Real
-) where {D}
-    s, c = sincos(α)
-    s2 = s^2
-    c2 = c^2
-    cs = c * s
+GaussianBeamPropagation.BeamRadius(w::Length, R::Length=Inf * u"m") =
+    BeamRadius(metres(w), metres(R))
 
-    xx_ = x * c2 + y * s2
-    xy_ = (x - y) * cs
-    yy_ = y * c2 + x * s2
+GaussianBeamPropagation.Waist(w0::Length; z::Length=0.0u"m") = Waist(metres(w0); z=metres(z))
 
-    return xx_, xy_, yy_
-end
+GaussianBeamPropagation.RayleighRange(zR::Length; z::Length=0.0u"m") =
+    RayleighRange(metres(zR); z=metres(z))
+
+GaussianBeamPropagation.ComplexBeamParameter(q::Quantity{<:Complex,Unitful.𝐋}) =
+    ComplexBeamParameter(metres(q))
+
+GaussianBeamPropagation.Beam(λ::Length, args...; kwargs...) =
+    Beam(metres(λ), args...; (k => metres(v) for (k, v) in kwargs)...)
+
+GaussianBeamPropagation.SecondOrderMoments(λ::Length; kwargs...) =
+    SecondOrderMoments(metres(λ); (k => metres(v) for (k, v) in kwargs)...)
 
 function GaussianBeamPropagation.SecondOrderMoments(
-    rxrx::Quantity{Float64,Unitful.𝐋^2},
-    rxry::Quantity{Float64,Unitful.𝐋^2},
-    ryry::Quantity{Float64,Unitful.𝐋^2},
-    θxθx::Union{Float64,Quantity{Float64,NoDims}},
-    θxθy::Union{Float64,Quantity{Float64,NoDims}},
-    θyθy::Union{Float64,Quantity{Float64,NoDims}},
-    rxθx::Quantity{Float64,Unitful.𝐋},
-    rxθy::Quantity{Float64,Unitful.𝐋},
-    ryθx::Quantity{Float64,Unitful.𝐋},
-    ryθy::Quantity{Float64,Unitful.𝐋},
+    rxrx::Quantity{<:Real,Unitful.𝐋^2},
+    rxry::Quantity{<:Real,Unitful.𝐋^2},
+    ryry::Quantity{<:Real,Unitful.𝐋^2},
+    θxθx::Union{Real,Quantity{<:Real,NoDims}},
+    θxθy::Union{Real,Quantity{<:Real,NoDims}},
+    θyθy::Union{Real,Quantity{<:Real,NoDims}},
+    rxθx::Length,
+    rxθy::Length,
+    ryθx::Length,
+    ryθy::Length,
 )
     return SecondOrderMoments(
         ustrip(u"m^2", rxrx),
@@ -58,113 +66,6 @@ function GaussianBeamPropagation.SecondOrderMoments(
         ustrip(u"m", ryθx),
         ustrip(u"m", ryθy),
     )
-end
-
-function GaussianBeamPropagation.WSOM_from_Q(
-    λ::Quantity{<:Real}, q::Union{Quantity{<:Complex},Missing}
-)
-    ismissing(q) && return missing
-
-    ε = λ / 4π
-
-    rr = ε * abs2(q) / imag(q)
-    rθ = ε * real(q) / imag(q)
-    θθ = ε / imag(q)
-
-    return rr, rθ, θθ
-end
-
-function GaussianBeamPropagation.WSOM_from_z_zR(
-    λ::Quantity{<:Real},
-    z::Union{Quantity{<:Real},Missing},
-    zR::Union{Quantity{<:Real},Missing},
-)
-    (ismissing(z) || ismissing(zR)) && return missing
-
-    ε = λ / 4π
-
-    rr = ε * (z^2 / zR + zR)
-    rθ = ε * z / zR
-    θθ = ε / zR
-
-    return rr, rθ, θθ
-end
-
-function GaussianBeamPropagation.WSOM_from_w_r(
-    λ::Quantity{<:Real},
-    w::Union{Quantity{<:Real},Missing},
-    r::Union{Quantity{<:Real},Missing},
-)
-    (ismissing(w) || ismissing(r)) && return missing
-
-    ε = λ / 4π
-
-    w2 = (w / 2)^2
-
-    rr = w2
-    rθ = w2 / r
-    θθ = w2 / r^2 + ε^2 / w2
-
-    return rr, rθ, θθ
-end
-
-function GaussianBeamPropagation.Beam(λ::Quantity{<:Real,Unitful.𝐋}; kwargs...)
-    return Beam(ustrip(u"m", λ), SecondOrderMoments(λ; kwargs...))
-end
-
-function GaussianBeamPropagation.SecondOrderMoments(
-    λ::Quantity;
-    zx::Union{Quantity,Missing}=missing,
-    zRx::Union{Quantity,Missing}=missing,
-    zy::Union{Quantity,Missing}=missing,
-    zRy::Union{Quantity,Missing}=missing,
-    wx::Union{Quantity,Missing}=missing,
-    wy::Union{Quantity,Missing}=missing,
-    rx::Union{Quantity,Missing}=missing,
-    ry::Union{Quantity,Missing}=missing,
-    qx::Union{Quantity{<:Complex},Missing}=missing,
-    qy::Union{Quantity{<:Complex},Missing}=missing,
-    φ::Real=0.0,
-)
-    rxrx_, rxθx_, θxθx_ = ifelse(
-        !ismissing(zx) && !ismissing(zRx),
-        GaussianBeamPropagation.WSOM_from_z_zR(λ, zx, zRx),
-        ifelse(
-            !ismissing(wx) && !ismissing(rx),
-            GaussianBeamPropagation.WSOM_from_w_r(λ, wx, rx),
-            ifelse(
-                !ismissing(qx),
-                GaussianBeamPropagation.WSOM_from_Q(λ, qx),
-                (missing, missing, missing),
-            ),
-        ),
-    )
-    ryry_, ryθy_, θyθy_ = ifelse(
-        !ismissing(zy) && !ismissing(zRy),
-        GaussianBeamPropagation.WSOM_from_z_zR(λ, zy, zRy),
-        ifelse(
-            !ismissing(wy) && !ismissing(ry),
-            GaussianBeamPropagation.WSOM_from_w_r(λ, wy, ry),
-            ifelse(
-                !ismissing(qy),
-                GaussianBeamPropagation.WSOM_from_Q(λ, qy),
-                (missing, missing, missing),
-            ),
-        ),
-    )
-
-    if ismissing(rxrx_) || ismissing(ryry_) || ismissing(θxθx_) || ismissing(θyθy_)
-        throw(ArgumentError("insufficient parameters: each axis needs (z, zR), (w, r) or q"))
-    end
-
-    rxrx, rxry, ryry = GaussianBeamPropagation.tensor_from_principal(rxrx_, ryry_, φ)
-    θxθx, θxθy, θyθy = GaussianBeamPropagation.tensor_from_principal(θxθx_, θyθy_, φ)
-    rxθx, rxθy, ryθy = GaussianBeamPropagation.tensor_from_principal(rxθx_, ryθy_, φ)
-    ryθx = rxθy
-
-    @debug "" rxrx rxry ryry θxθx θxθy θyθy rxθx rxθy ryθy
-
-    return SecondOrderMoments(rxrx, rxry, ryry, θxθx, θxθy, θyθy, rxθx, rxθy, ryθx, ryθy)
 end
 
 end

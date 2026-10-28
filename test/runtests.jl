@@ -209,23 +209,29 @@ using StaticArrays
     end
 
     @testset "Wigner Beam" begin
-        @testset "SOM from variables" begin
+        @testset "Axis parameters" begin
+            using GaussianBeamPropagation: axis_moments
+
             λ = 632.8e-9
-            wsom = (1.0071324798855137e-7, 5.035662399427568e-8, 5.035662399427568e-8)
+            moments = (1.0071324798855137e-7, 5.035662399427568e-8, 5.035662399427568e-8)
 
             zR = 1.0
             z = 1.0
-            wsom_zzR = GaussianBeamPropagation.WSOM_from_z_zR(λ, z, zR)
-            @test all(wsom .≈ wsom_zzR)
+            @test all(moments .≈ axis_moments(λ, RayleighRange(zR; z)))
+
+            w0 = sqrt(zR * λ / π)
+            @test all(moments .≈ axis_moments(λ, Waist(w0; z)))
 
             r = z + zR^2 / z
             w = sqrt(λ / π * (zR + z^2 / zR))
-            wsom_wr = GaussianBeamPropagation.WSOM_from_w_r(λ, w, r)
-            @test all(wsom .≈ wsom_wr)
+            @test all(moments .≈ axis_moments(λ, BeamRadius(w, r)))
 
             q = 1 / (1 / r - im * λ / π / w^2)
-            wsom_q = GaussianBeamPropagation.WSOM_from_Q(λ, q)
-            @test all(wsom .≈ wsom_q)
+            @test all(moments .≈ axis_moments(λ, ComplexBeamParameter(q)))
+
+            # At the waist
+            @test radius(Beam(λ, Waist(1e-3), Waist(2e-3)))[1:2] ≈ [1e-3, 2e-3]
+            @test radius(Beam(λ, BeamRadius(1e-3)))[1:2] ≈ [1e-3, 1e-3]
         end
 
         @testset "Angles consistent" begin
@@ -236,7 +242,7 @@ using StaticArrays
                 wy = 1e-3
                 φ = deg2rad(35)
 
-                beam = Beam(λ; wx, wy, rx=Inf, ry=Inf, φ=φ)
+                beam = Beam(λ, BeamRadius(wx), BeamRadius(wy); φ)
                 calc_radius = radius(beam)
                 set_M, set_m = minmax(wx, wy)
                 calc_M, calc_m = minmax(calc_radius[1], calc_radius[2])
@@ -250,48 +256,48 @@ using StaticArrays
             @testset "ISO radius" begin
                 @testset "Normal 1" begin
                     radius_ =
-                        radius(Beam(λ; wx=2e-3, wy=4e-3, rx=Inf, ry=Inf, φ=deg2rad(30)),)
+                        radius(Beam(λ, BeamRadius(2e-3), BeamRadius(4e-3); φ=deg2rad(30)),)
                     @test radius_ ≈ [2e-3, 4e-3, deg2rad(30)]
                 end
 
                 @testset "Normal 2" begin
                     radius_ =
-                        radius(Beam(λ; wx=2e-3, wy=4e-3, rx=Inf, ry=Inf, φ=deg2rad(-15)),)
+                        radius(Beam(λ, BeamRadius(2e-3), BeamRadius(4e-3); φ=deg2rad(-15)),)
                     @test radius_ ≈ [2e-3, 4e-3, deg2rad(-15)]
                 end
                 @testset "Normal 3" begin
                     radius_ =
-                        radius(Beam(λ; wx=4e-3, wy=2e-3, rx=Inf, ry=Inf, φ=deg2rad(15)),)
+                        radius(Beam(λ, BeamRadius(4e-3), BeamRadius(2e-3); φ=deg2rad(15)),)
                     @test radius_ ≈ [4e-3, 2e-3, deg2rad(15)]
                 end
 
                 @testset "Normal 4" begin
                     radius_ =
-                        radius(Beam(λ; wx=4e-3, wy=2e-3, rx=Inf, ry=Inf, φ=deg2rad(-30)),)
+                        radius(Beam(λ, BeamRadius(4e-3), BeamRadius(2e-3); φ=deg2rad(-30)),)
                     @test radius_ ≈ [4e-3, 2e-3, deg2rad(-30)]
                 end
 
                 @testset "45°, swapping x and y" begin
                     radius_ =
-                        radius(Beam(λ; wx=2e-3, wy=4e-3, rx=Inf, ry=Inf, φ=deg2rad(45)),)
+                        radius(Beam(λ, BeamRadius(2e-3), BeamRadius(4e-3); φ=deg2rad(45)),)
                     @test radius_ ≈ [4e-3, 2e-3, deg2rad(-45)]
                 end
 
                 @testset "-45°, swapping x and y" begin
                     radius_ =
-                        radius(Beam(λ; wx=2e-3, wy=4e-3, rx=Inf, ry=Inf, φ=deg2rad(-45)),)
+                        radius(Beam(λ, BeamRadius(2e-3), BeamRadius(4e-3); φ=deg2rad(-45)),)
                     @test radius_ ≈ [4e-3, 2e-3, deg2rad(45)]
                 end
 
                 @testset "45°, not swapping x and y" begin
                     radius_ =
-                        radius(Beam(λ; wx=4e-3, wy=2e-3, rx=Inf, ry=Inf, φ=deg2rad(45)),)
+                        radius(Beam(λ, BeamRadius(4e-3), BeamRadius(2e-3); φ=deg2rad(45)),)
                     @test radius_ ≈ [4e-3, 2e-3, deg2rad(45)]
                 end
 
                 @testset "-45°, not swapping x and y" begin
                     radius_ =
-                        radius(Beam(λ; wx=4e-3, wy=2e-3, rx=Inf, ry=Inf, φ=deg2rad(-45)),)
+                        radius(Beam(λ, BeamRadius(4e-3), BeamRadius(2e-3); φ=deg2rad(-45)),)
                     @test radius_ ≈ [4e-3, 2e-3, deg2rad(-45)]
                 end
             end
@@ -301,9 +307,8 @@ using StaticArrays
             # Principal axes rotated by 60°: the axis closest to x is the second one, at -30°
             ε2 = (632.8e-9 / 4π)^2
             som = SecondOrderMoments(;
-                rx=4e-6, ry=1e-6, φ_r=deg2rad(60),
-                θx=ε2 / 4e-6, θy=ε2 / 1e-6, φ_θ=deg2rad(60),
-                rθx=0.0, rθy=0.0, φ_rθ=0.0, twist=0.0,
+                spatial=PrincipalMoments(4e-6, 1e-6, deg2rad(60)),
+                angular=PrincipalMoments(ε2 / 4e-6, ε2 / 1e-6, deg2rad(60)),
             )
             beam = FreeSpace(1.0) * Beam(632.8e-9, som)
 
@@ -316,7 +321,7 @@ using StaticArrays
 
         @testset "Radius along a direction" begin
             λ = 632.8e-9
-            beam = Beam(λ; wx=2e-3, wy=1e-3, rx=Inf, ry=Inf, φ=deg2rad(20))
+            beam = Beam(λ, BeamRadius(2e-3), BeamRadius(1e-3); φ=deg2rad(20))
 
             # Along the principal axes, the radii are the principal radii
             @test radius(beam, deg2rad(20)) ≈ [2e-3, 1e-3]
@@ -330,7 +335,7 @@ using StaticArrays
         end
 
         @testset "Insufficient parameters" begin
-            @test_throws ArgumentError Beam(632.8e-9; wx=1e-3, wy=1e-3)
+            @test_throws ArgumentError SecondOrderMoments(; angular=PrincipalMoments(1.0))
         end
 
         @testset "Mirror" begin
@@ -341,7 +346,7 @@ using StaticArrays
                 beam_out =
                     FreeSpace(1) *
                         Mirror(power, incidence) *
-                        Beam(λ; wx=1e-3, wy=1e-3, rx=Inf, ry=Inf, φ=deg2rad(0))
+                        Beam(λ, BeamRadius(1e-3), BeamRadius(1e-3); φ=deg2rad(0))
 
                 @test radius(beam_out)[3] ≈ deg2rad(0)
             end
@@ -353,7 +358,7 @@ using StaticArrays
                 beam_out =
                     FreeSpace(1) *
                         Mirror(power, incidence) *
-                        Beam(λ; wx=1e-3, wy=1e-3, rx=Inf, ry=Inf, φ=deg2rad(0))
+                        Beam(λ, BeamRadius(1e-3), BeamRadius(1e-3); φ=deg2rad(0))
 
                 @test radius(beam_out)[3] ≈ deg2rad(-20)
             end
@@ -365,7 +370,7 @@ using StaticArrays
                 beam_out =
                     FreeSpace(1) *
                         Mirror(power, incidence) *
-                        Beam(λ; wx=1e-3, wy=1e-3, rx=Inf, ry=Inf, φ=deg2rad(0))
+                        Beam(λ, BeamRadius(1e-3), BeamRadius(1e-3); φ=deg2rad(0))
 
                 @test radius(beam_out)[3] ≈ deg2rad(10)
             end
@@ -494,7 +499,7 @@ using StaticArrays
                         IncidenceAngle(ι=deg2rad(10), θ=deg2rad(45)),
                     ) *
                     FreeSpace(100e-3) *
-                    Beam(800e-9; wx=10e-3, wy=10e-3, rx=Inf, ry=Inf, φ=0.0)
+                    Beam(800e-9, BeamRadius(10e-3), BeamRadius(10e-3); φ=0.0)
             @test radius(beam)[2] ≈ 7.235348837209305e-3 rtol=0.02 skip=false
             @test radius(beam)[1] ≈ 5.3600000000000065e-3 rtol=0.02 skip=false
 
@@ -557,7 +562,7 @@ using StaticArrays
                         IncidenceAngle(; ι=deg2rad(10), θ=deg2rad(45)),
                     ) *
                     FreeSpace(100e-3) *
-                    Beam(800e-9; wx=10e-3, wy=10e-3, rx=Inf, ry=Inf, φ=0.0)
+                    Beam(800e-9, BeamRadius(10e-3), BeamRadius(10e-3); φ=0.0)
             @test radius(beam)[1]≈7.235348837209305e-3 rtol=0.01 skip=true
             @test radius(beam)[2]≈5.3600000000000065e-3 rtol=0.01 skip=true
 
@@ -782,8 +787,8 @@ using StaticArrays
         αs = range(0, π; length=37)
         beams = [
             Beam(λ, SecondOrderMoments(;
-                rx=4e-6, ry=1e-6, φ_r=α, θx=ε2 / 4e-6, θy=ε2 / 1e-6, φ_θ=α,
-                rθx=0.0, rθy=0.0, φ_rθ=0.0, twist=0.0,
+                spatial=PrincipalMoments(4e-6, 1e-6, α),
+                angular=PrincipalMoments(ε2 / 4e-6, ε2 / 1e-6, α),
             )) for α in αs
         ]
 
@@ -831,16 +836,9 @@ using StaticArrays
             return Beam(
                 λ,
                 SecondOrderMoments(;
-                    rx=(wx / 2)^2,
-                    ry=(wy / 2)^2,
-                    φ_r,
-                    θx=m2 * ε2 / (wx / 2)^2,
-                    θy=m2 * ε2 / (wy / 2)^2,
-                    φ_θ,
-                    rθx,
-                    rθy,
-                    φ_rθ,
-                    twist=0.0,
+                    spatial=PrincipalMoments((wx / 2)^2, (wy / 2)^2, φ_r),
+                    angular=PrincipalMoments(m2 * ε2 / (wx / 2)^2, m2 * ε2 / (wy / 2)^2, φ_θ),
+                    mixed=PrincipalMoments(rθx, rθy, φ_rθ),
                 ),
             )
         end
@@ -942,6 +940,33 @@ using StaticArrays
 
             l2 = ThickLens(Curvature(), 1.0, Curvature(), 1.5)
             @test (@test_deprecated l2.rtm) == get_transfer_matrix(l2)
+        end
+
+        @testset "Beam keyword constructor" begin
+            λ = 632.8e-9
+            @test (@test_deprecated Beam(λ; wx=1e-3, wy=2e-3, rx=Inf, ry=1.0, φ=0.3)) ==
+                  Beam(λ, BeamRadius(1e-3), BeamRadius(2e-3, 1.0); φ=0.3)
+            @test (@test_deprecated Beam(λ; zx=0.5, zRx=1.0, qy=0.5 + 1.0im)) ==
+                  Beam(λ, RayleighRange(1.0; z=0.5), ComplexBeamParameter(0.5 + 1.0im))
+            @test (@test_deprecated SecondOrderMoments(λ; wx=1e-3, wy=1e-3, rx=Inf, ry=Inf)) ==
+                  Beam(λ, BeamRadius(1e-3)).moments
+            @test_throws ArgumentError Beam(λ; wx=1e-3, wy=1e-3)
+        end
+
+        @testset "SecondOrderMoments keywords" begin
+            @test (@test_deprecated SecondOrderMoments(;
+                rx=4.0, ry=1.0, φ_r=0.1, θx=2.0, θy=1.0, φ_θ=0.2, rθx=0.5, rθy=0.1, φ_rθ=0.3, twist=0.2,
+            )) == SecondOrderMoments(;
+                spatial=PrincipalMoments(4.0, 1.0, 0.1),
+                angular=PrincipalMoments(2.0, 1.0, 0.2),
+                mixed=PrincipalMoments(0.5, 0.1, 0.3),
+                twist=0.2,
+            )
+        end
+
+        @testset "Beam field inner" begin
+            beam = Beam(632.8e-9, Waist(1e-3))
+            @test (@test_deprecated beam.inner) === beam.moments
         end
     end
 end
