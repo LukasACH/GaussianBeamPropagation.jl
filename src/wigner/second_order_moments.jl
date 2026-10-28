@@ -30,10 +30,6 @@ function AsymmetricMoments(xx::T, xy::T, yx::T, yy::T) where {T<:AbstractFloat}
     return AsymmetricMoments{T}(xx, xy, yx, yy)
 end
 
-function AsymmetricMoments(xx::T, xy::T, yy::T) where {T<:AbstractFloat}
-    return AsymmetricMoments{T}(xx, xy, yx, yy)
-end
-
 function AsymmetricMoments(xx::T, yy::T; sum=zero(T), dif=zero(T)) where {T<:AbstractFloat}
     return AsymmetricMoments{T}(xx, (sum+dif)/2, (sum-dif)/2, yy)
 end
