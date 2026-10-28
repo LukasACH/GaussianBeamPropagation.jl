@@ -21,16 +21,3 @@ function get_transfer_matrix(e::FreeSpace{T})::SMatrix{4,4,T,16} where {T}
         0.0 0.0 0.0 1.0
     ]
 end
-
-function Base.getproperty(e::FreeSpace, s::Symbol, args...)
-    if s==:rtm
-        Base.depwarn(
-            "Accessing field rtm of FreeSpace directly is deprecated. Use get_transfer_matrix instead!",
-            :getproperty,
-        )
-        return get_transfer_matrix(e)
-    else
-        return getfield(e, s, args...)
-        # throw(FieldError(typeof(e), s))
-    end
-end

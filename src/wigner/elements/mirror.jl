@@ -40,16 +40,3 @@ function get_transfer_matrix(e::Mirror{T})::SMatrix{4,4,T,16} where {T}
         Mxy Myy 0.0 1.0;
     ]
 end
-
-function Base.getproperty(e::Mirror, s::Symbol, args...)
-    if s==:rtm
-        Base.depwarn(
-            "Accessing field rtm of Mirror directly is deprecated. Use get_transfer_matrix instead!",
-            :getproperty,
-        )
-        return get_transfer_matrix(e)
-    else
-        return getfield(e, s, args...)
-        # throw(FieldError(typeof(e), s))
-    end
-end

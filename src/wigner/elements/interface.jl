@@ -56,16 +56,3 @@ function get_transfer_matrix(e::OpticalInterface{T})::SMatrix{4,4,T,16} where {T
         Myx Myy Dxy Dyy
     ]
 end
-
-function Base.getproperty(e::OpticalInterface, s::Symbol, args...)
-    if s==:rtm
-        Base.depwarn(
-            "Accessing field rtm of OpticalInterface directly is deprecated. Use get_transfer_matrix instead!",
-            :getproperty,
-        )
-        return get_transfer_matrix(e)
-    else
-        return getfield(e, s, args...)
-        # throw(FieldError(typeof(e), s))
-    end
-end
