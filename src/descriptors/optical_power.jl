@@ -33,6 +33,17 @@ end
 OpticalPower(P::Real) = OpticalPower(P, P)
 OpticalPower() = OpticalPower(0.0f0)
 
+"""
+    lensmaker(front::Curvature, back::Curvature, n::Real)
+
+Optical power of a thin lens with the surface curvatures `front` and `back` and the relative
+refractive index `n` (lensmaker's equation).
+"""
+function lensmaker(front::Curvature, back::Curvature, n::Real)
+    P = (n - 1) * (front - back)
+    return OpticalPower(P.xx, P.xy, P.yy)
+end
+
 Base.:-(P::OpticalPower) = OpticalPower(-P.xx, -P.xy, -P.yy)
 
 function Base.:-(lhs::OpticalPower, rhs::OpticalPower)
