@@ -51,9 +51,8 @@ Logging.disable_logging(Logging.Info) # hide
 beam = Beam(
     λ,
     SecondOrderMoments(;
-        rx=(3e-3 / 2)^2, ry=(2e-3 / 2)^2, φ_r=0.5,
-        θx=4ε2 / (3e-3 / 2)^2, θy=4ε2 / (2e-3 / 2)^2, φ_θ=0.5,
-        rθx=0.0, rθy=0.0, φ_rθ=0.0, twist=0.0,
+        spatial=PrincipalMoments((3e-3 / 2)^2, (2e-3 / 2)^2, 0.5),
+        angular=PrincipalMoments(4ε2 / (3e-3 / 2)^2, 4ε2 / (2e-3 / 2)^2, 0.5),
     ),
 )
 

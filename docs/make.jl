@@ -6,6 +6,7 @@ makedocs(;
         "Introduction"=>"index.md",
         "How to get started"=>"getting_started.md",
         "API"=>Any[
+            "Beams"=>"api/beams.md",
             "Helpers"=>"api/helpers.md",
             "Elements"=>"api/elements.md",
             "Sampling beams"=>"api/sampling.md",

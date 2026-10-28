@@ -48,26 +48,21 @@ julia> λ = 1030u"nm"
 julia> w0_in = 2.75u"mm"
 2.75 mm
 
-julia> beam_in = GaussianBeam(λ;
-            wx=w0_in,
-            wy=w0_in,
-            rx=Inf * u"m",
-            ry=Inf * u"m",
-        )
-Beam{Float64, SecondOrderMoments{Float64}}(1.03e-6, SecondOrderMoments{Float64}(1.890625e-6, 0.0, 1.890625e-6, 3.553442767806815e-9, 0.0, 3.553442767806815e-9, 0.0, 0.0, 0.0, 0.0))
+julia> beam_in = Beam(λ, Waist(w0_in))
+Beam{Float64}(1.03e-6, SecondOrderMoments{Float64}(1.8906249999999996e-6, 0.0, 1.8906249999999996e-6, 3.5534427678068156e-9, 0.0, 3.5534427678068156e-9, 0.0, 0.0, 0.0, 0.0))
 
 julia> M = FreeSpace(0.5) *
                ThinLens(OpticalPower(1 / 0.5)) *
                FreeSpace(0.5)
-MatrixElement([0.0 0.0 0.5 0.0; 0.0 0.0 0.0 0.5; -2.0 0.0 0.0 0.0; 0.0 -2.0 0.0 0.0])
+MatrixElement{Float64}([0.0 0.0 0.5 0.0; 0.0 0.0 0.0 0.5; -2.0 0.0 0.0 0.0; 0.0 -2.0 0.0 0.0])
 
 julia> beam_out = M * beam_in
-Beam{Float64, StaticArraysCore.SMatrix{4, 4, Float64, 16}}(1.03e-6, [8.883606919517038e-10 0.0 0.0 0.0; 0.0 8.883606919517038e-10 0.0 0.0; 0.0 0.0 7.5625e-6 0.0; 0.0 0.0 0.0 7.5625e-6])
+Beam{Float64}(1.03e-6, SecondOrderMoments{Float64}(8.883606919517039e-10, 0.0, 8.883606919517039e-10, 7.562499999999998e-6, 0.0, 7.562499999999998e-6, 0.0, 0.0, 0.0, 0.0))
 
 julia> radius(beam_out)
 3-element SVector{3, Float64} with indices SOneTo(3):
- 5.961076050350989e-5
- 5.961076050350989e-5
+ 5.96107605035099e-5
+ 5.96107605035099e-5
  0.0
 
 julia> phase_curvature(beam_out)
