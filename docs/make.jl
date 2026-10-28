@@ -12,6 +12,11 @@ makedocs(;
         "Fitting"=>"fitting.md",
         "Integration with other packages"=>"integration.md",
         "API Reference"=>"reference.md",
+        "Future work"=>Any[
+            "Optical assemblies"=>"future_work/optical_assembly.md",
+            "Propagation along a system"=>"future_work/propagation.md",
+            "Moment types"=>"future_work/moment_types.md",
+        ],
     ],
 )
 
