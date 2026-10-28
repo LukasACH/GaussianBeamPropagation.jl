@@ -6,7 +6,8 @@
 Calculates the 1/e² radius from a `Beam`, `SecondOrderMoments` or measured second order moments (`xx`, `xy`, and `yy`).
 The return value is a `SVector` with three elements, the radius in both _x_ and _y_, and the angle _φ_.
 The values _x_ and _y_ are the given in metres, and the angle _φ_ is given in radians.
-It follows the definition of ISO 11146 for `x`, `y`, and the angle `φ`.
+It follows the definition of ISO 11146 for `x`, `y`, and the angle `φ`: _x_ is the principal axis closest to the
+_x_ direction, and _φ_ ∈ [−π/4, π/4] is its angle to the _x_ direction.
 
 If the optional argument `φ` is provided, the radius is calculated along the direction of the angle `φ` (in radians).
 In that case, the return value is a `SVector` with only two elements, the radius in the _x_ and _y_ directions, both given in metres.
@@ -22,6 +23,7 @@ radius(beam::Beam, φ::Real) = radius(beam.inner, φ)
 
 Calculates the divergence angle from a `Beam` or `SecondOrderMoments`.
 The return value is a `SVector` with three elements, the divergence in both _x_ and _y_ (in radians), and the angle _φ_ (in radians).
+The axes and the angle follow the same convention as [`radius`](@ref): _φ_ ∈ [−π/4, π/4].
 
 It uses a right-handed coordinate system.
 """
@@ -33,6 +35,7 @@ divergence(beam::Beam) = divergence(beam.inner)
 
 Calculates the phase-front curvature from a `Beam` or `SecondOrderMoments`.
 The return value is a `SVector` with three elements, the phase curvature in both _x_ and _y_ (in metres/radians), and the angle _φ_ (in radians).
+The axes and the angle follow the same convention as [`radius`](@ref): _φ_ ∈ [−π/4, π/4].
 
 It uses a right-handed coordinate system.
 """
@@ -46,7 +49,6 @@ Calculates the twist from a `Beam` or `SecondOrderMoments`.
 The return value is a single `Float64` in units of metres²/radians².
 """
 twist(beam::Beam) = twist(beam.inner)
-
 
 function radius(som::SecondOrderMoments)
     return radius(som.rxrx, som.rxry, som.ryry)
@@ -68,76 +70,25 @@ function radius(xx::Real, xy::Real, yy::Real, φ0::Real)
 end
 
 function radius(xx::Real, xy::Real, yy::Real)
-    diff_xx_yy = ifelse(xx ≈ yy, 0.0, xx-yy)
-
-    a = xx + yy
-    b = flipsign(sqrt((xx - yy)^2 + 4 * xy^2), diff_xx_yy)
-
-    x = sqrt(2 * (a + b))
-    y = sqrt(2 * (a - b))
-
-    φ = atan(flipsign(2 * xy, diff_xx_yy), abs(xx - yy)) / 2
-
-    return SA[x, y, φ]
+    x, y, φ = principal_axes(xx, xy, yy)
+    return SA[2sqrt(x), 2sqrt(y), φ]
 end
 
 function divergence(som::SecondOrderMoments)
-    a = (som.θxθx + som.θyθy)
-    b = sqrt((som.θxθx - som.θyθy)^2 + 4 * som.θxθy^2)
-    τ = 1 # sign(som.θxθx - som.θyθy)
-
-    x = sqrt(2 * (a + τ * b))
-    y = sqrt(2 * (a - τ * b))
-    φ = atan(2 * som.θxθy, (som.θxθx - som.θyθy)) / 2
-
-    φ = mod2pi(2φ) / 2
-
-    return SA[x, y, φ]
+    x, y, φ = principal_axes(som.θxθx, som.θxθy, som.θyθy)
+    return SA[2sqrt(x), 2sqrt(y), φ]
 end
 
 function phase_curvature(som::SecondOrderMoments)
-    # rtm = generate_wigner_matrix(som)
-    # W = SMatrix{2,2}(@view rtm[1:2, 1:2]) # Extract position-position submatrix
-    # U = SMatrix{2,2}(@view rtm[3:4, 3:4]) # Extract angle-angle submatrix
-    # M = SMatrix{2,2}(@view rtm[1:2, 3:4]) # Extract position-angle submatrix
-    W = SA_F64[som.rxrx som.rxry; som.rxry som.ryry] # .* u"m^2"
-    # U = SA_F64[som.θxθx som.θxθy; som.θxθy som.θyθy]
-    M = SA_F64[som.rxθx som.rxθy; som.ryθx som.ryθy] # .* u"m*rad"
+    W = SA[som.rxrx som.rxry; som.rxry som.ryry]
+    M = SA[som.rxθx som.rxθy; som.ryθx som.ryθy]
 
     A = SA[0 1; -1 0] / W
     B = M / W
     C = (A - A') \ (B - B') * A - B
 
-    Cxx = C[1, 1]
-    Cxy = (C[1, 2] + C[2, 1]) / 2
-    Cyy = C[2, 2]
-
-    a = (Cxx + Cyy)
-    b = sqrt((Cxx - Cyy)^2 + 4 * Cxy^2)
-    μ = 1 # sign(Cxx - Cyy)
-
-    x = -2 / (a + μ * b)
-    y = -2 / (a - μ * b)
-    φ = atan(2 * Cxy, (Cxx - Cyy)) / 2
-
-    φ = mod2pi(2φ) / 2
-
-    return SA[x, y, φ]
+    x, y, φ = principal_axes(C[1, 1], (C[1, 2] + C[2, 1]) / 2, C[2, 2])
+    return SA[-1 / x, -1 / y, φ]
 end
 
 twist(som::SecondOrderMoments) = som.rxθy - som.ryθx
-
-#=
-function phase_curvature(som::SecondOrderMoments, λ::Real)
-    @info "Calculating phase from Wigner Second Order Moments"
-    a = (som.rxθx + som.ryθy)
-    b = sqrt((som.rxθx - som.ryθy)^2 + 4 * som.rxθy * som.ryθx)
-    μ = 1 # sign(som.rxθx - som.ryθy)
-
-    x = sqrt(2 * (a + υ * b))
-    y = sqrt(2 * (a - υ * b))
-    φ = atan(2 * som.rxθy, (som.rxθx - som.ryθy)) / 2
-
-    return (; x, y, φ)
-end
-=#

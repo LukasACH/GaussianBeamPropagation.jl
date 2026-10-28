@@ -297,6 +297,23 @@ using StaticArrays
             end
         end
 
+        @testset "Angle convention" begin
+            # Principal axes rotated by 60°: the axis closest to x is the second one, at -30°
+            ε2 = (632.8e-9 / 4π)^2
+            som = SecondOrderMoments(;
+                rx=4e-6, ry=1e-6, φ_r=deg2rad(60),
+                θx=ε2 / 4e-6, θy=ε2 / 1e-6, φ_θ=deg2rad(60),
+                rθx=0.0, rθy=0.0, φ_rθ=0.0, twist=0.0,
+            )
+            beam = FreeSpace(1.0) * Beam(632.8e-9, som)
+
+            for quantity in (radius, divergence, phase_curvature)
+                @test quantity(beam)[3] ≈ deg2rad(-30)
+            end
+            @test radius(Beam(632.8e-9, som))[1:2] ≈ [2e-3, 4e-3]
+            @test divergence(beam)[1:2] ≈ 2 .* sqrt.([ε2 / 1e-6, ε2 / 4e-6])
+        end
+
         @testset "Radius along a direction" begin
             λ = 632.8e-9
             beam = Beam(λ; wx=2e-3, wy=1e-3, rx=Inf, ry=Inf, φ=deg2rad(20))
