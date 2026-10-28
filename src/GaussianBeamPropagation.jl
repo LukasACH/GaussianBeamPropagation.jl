@@ -23,6 +23,7 @@ include("wigner/elements/thick_lens.jl")
 include("wigner/arithmetic_operators.jl")
 
 include("wigner/beam_parameters.jl")
+include("beam_sampling.jl")
 
 include("fitting/system_fitting.jl")
 include("fitting/propagation_fitting.jl")
@@ -36,6 +37,7 @@ export get_transfer_matrix
 export Curvature, OpticalPower, IncidenceAngle
 
 export radius, divergence, phase_curvature, twist
+export sample_beam, sample_beam_continuous, sample_beam_at_angle
 
 export fit_system, propagation_fitting, FitParameters, beam_fit_parameters, observation, SystemFit
 # Deprecated:

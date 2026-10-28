@@ -8,6 +8,7 @@ makedocs(;
         "API"=>Any[
             "Helpers"=>"api/helpers.md",
             "Elements"=>"api/elements.md",
+            "Sampling beams"=>"api/sampling.md",
         ],
         "Fitting"=>"fitting.md",
         "Integration with other packages"=>"integration.md",
