@@ -1,7 +1,5 @@
 module GaussianBeamPropagation
 
-import Base: convert, *, getproperty, angle
-
 using StaticArrays, Optim
 
 include("utils.jl")
@@ -26,11 +24,10 @@ include("wigner/elements/thick_lens.jl")
 
 include("wigner/arithmetic_operators.jl")
 
-include("wigner/wigner.jl")
-
 include("wigner/beam_parameters.jl")
 
-include("fitting.jl")
+include("fitting/system_fitting.jl")
+include("fitting/propagation_fitting.jl")
 
 export Beam, SecondOrderMoments
 export ThinLens,
