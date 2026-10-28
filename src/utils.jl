@@ -1,7 +1,5 @@
 mod_pi(x) = mod2pi(2x) / 2
-mod_pi2(x) = mod_pi(2x) / 2
 mod_mpi2_pi2(x) = mod_pi(x + π / 2) - π / 2
-mod_mpi4_pi4(x) = mod_mpi2_pi2(2x) / 2
 
 """
     principal_axes(xx, xy, yy)
