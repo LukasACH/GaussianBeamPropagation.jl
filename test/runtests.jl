@@ -131,7 +131,7 @@ using StaticArrays
     end
 
     @testset "Utils" begin
-        using GaussianBeamPropagation: rotate2, rotate3, rotate4, get_x_y_φ
+        using GaussianBeamPropagation: rotate2, rotate3, rotate4, principal_axes
 
         xx = 0.44793749401064553
         xy = 0.38922522287528594
@@ -181,30 +181,30 @@ using StaticArrays
             @test rotate4(xx, xy, yx, yy, α)[2] - rotate4(xx, xy, yx, yy, α)[3] ≈ xy - yx
         end
 
-        @testset "get_x_y_φ" begin
-            @test get_x_y_φ(rotate2(1, 2, 0))[1] ≈ 1.0
-            @test get_x_y_φ(rotate2(1, 2, 0))[2] ≈ 2.0
-            @test get_x_y_φ(rotate2(1, 2, 0))[3] ≈ 0.0 atol=eps(Float64)
+        @testset "principal_axes" begin
+            @test principal_axes(rotate2(1, 2, 0))[1] ≈ 1.0
+            @test principal_axes(rotate2(1, 2, 0))[2] ≈ 2.0
+            @test principal_axes(rotate2(1, 2, 0))[3] ≈ 0.0 atol=eps(Float64)
 
-            @test get_x_y_φ(rotate2(1, 2, π/2))[1] ≈ 2.0
-            @test get_x_y_φ(rotate2(1, 2, π/2))[2] ≈ 1.0
-            @test get_x_y_φ(rotate2(1, 2, π/2))[3] ≈ 0.0 atol=eps(Float64)
+            @test principal_axes(rotate2(1, 2, π/2))[1] ≈ 2.0
+            @test principal_axes(rotate2(1, 2, π/2))[2] ≈ 1.0
+            @test principal_axes(rotate2(1, 2, π/2))[3] ≈ 0.0 atol=eps(Float64)
 
-            @test get_x_y_φ(rotate2(1, 2, π/4))[1] ≈ 2.0
-            @test get_x_y_φ(rotate2(1, 2, π/4))[2] ≈ 1.0
-            @test get_x_y_φ(rotate2(1, 2, π/4))[3] ≈ -π/4
+            @test principal_axes(rotate2(1, 2, π/4))[1] ≈ 2.0
+            @test principal_axes(rotate2(1, 2, π/4))[2] ≈ 1.0
+            @test principal_axes(rotate2(1, 2, π/4))[3] ≈ -π/4
 
-            @test get_x_y_φ(rotate2(1, 2, -π/4))[1] ≈ 2.0
-            @test get_x_y_φ(rotate2(1, 2, -π/4))[2] ≈ 1.0
-            @test get_x_y_φ(rotate2(1, 2, -π/4))[3] ≈ π/4
+            @test principal_axes(rotate2(1, 2, -π/4))[1] ≈ 2.0
+            @test principal_axes(rotate2(1, 2, -π/4))[2] ≈ 1.0
+            @test principal_axes(rotate2(1, 2, -π/4))[3] ≈ π/4
 
-            @test get_x_y_φ(rotate2(2, 1, π/4))[1] ≈ 2.0
-            @test get_x_y_φ(rotate2(2, 1, π/4))[2] ≈ 1.0
-            @test get_x_y_φ(rotate2(2, 1, π/4))[3] ≈ π/4
+            @test principal_axes(rotate2(2, 1, π/4))[1] ≈ 2.0
+            @test principal_axes(rotate2(2, 1, π/4))[2] ≈ 1.0
+            @test principal_axes(rotate2(2, 1, π/4))[3] ≈ π/4
 
-            @test get_x_y_φ(rotate2(2, 1, -π/4))[1] ≈ 2.0
-            @test get_x_y_φ(rotate2(2, 1, -π/4))[2] ≈ 1.0
-            @test get_x_y_φ(rotate2(2, 1, -π/4))[3] ≈ -π/4
+            @test principal_axes(rotate2(2, 1, -π/4))[1] ≈ 2.0
+            @test principal_axes(rotate2(2, 1, -π/4))[2] ≈ 1.0
+            @test principal_axes(rotate2(2, 1, -π/4))[3] ≈ -π/4
         end
     end
 

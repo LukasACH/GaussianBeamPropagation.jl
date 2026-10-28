@@ -3,10 +3,19 @@ mod_pi2(x) = mod_pi(2x) / 2
 mod_mpi2_pi2(x) = mod_pi(x + π / 2) - π / 2
 mod_mpi4_pi4(x) = mod_mpi2_pi2(2x) / 2
 
-get_x_y_φ(params::NTuple{3,<:Real}) = get_x_y_φ(params...)
+"""
+    principal_axes(xx, xy, yy)
 
-function get_x_y_φ(xx::Real, xy::Real, yy::Real)
-    diff_xx_yy = ifelse(xx ≈ yy, 0.0, xx-yy)
+Principal values and orientation `(x, y, φ)` of the symmetric tensor `[xx xy; xy yy]`, such that
+`rotate2(x, y, φ) == (xx, xy, yy)`.
+
+`x` belongs to the principal axis closest to the _x_ direction, and `φ ∈ [−π/4, π/4]` is the
+angle between the two. All quantities given along _x_ and _y_ use this convention.
+"""
+principal_axes(params::NTuple{3,<:Real}) = principal_axes(params...)
+
+function principal_axes(xx::Real, xy::Real, yy::Real)
+    diff_xx_yy = ifelse(xx ≈ yy, zero(xx - yy), xx - yy)
 
     a = xx + yy
     b = flipsign(sqrt((xx - yy)^2 + 4 * xy^2), diff_xx_yy)

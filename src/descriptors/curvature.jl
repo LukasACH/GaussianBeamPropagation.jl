@@ -77,7 +77,7 @@ Base.:/(κ::Curvature, a::Real) =
     Curvature(κ.xx / a, κ.xy / a, κ.yy/a)
 
 function Base.show(io::IO, ::MIME"text/plain", κ::Curvature{T}) where {T}
-    x, y, φ = get_x_y_φ(κ.xx, κ.xy, κ.yy)
+    x, y, φ = principal_axes(κ.xx, κ.xy, κ.yy)
 
     return print(
         io,
