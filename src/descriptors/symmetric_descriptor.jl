@@ -24,7 +24,7 @@ macro symmetric_descriptor(D, symbol, inverse_symbol)
 
         $D(xx::Real, xy::Real, yy::Real) = $D(promote(xx, xy, yy)...)
         function $D(x::Real, y::Real; φ::Real=0.0f0)
-            φ = convert(promote_type(typeof(x), typeof(y)), φ)
+            φ = convert(float(promote_type(typeof(x), typeof(y))), φ)
             return $D(tensor_from_principal(x, y, φ)...)
         end
         $D(d::Real) = $D(d, d)
