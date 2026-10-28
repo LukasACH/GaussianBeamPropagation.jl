@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Angle utilities · GaussianBeamPropagation</title><meta name="title" content="Angle utilities · GaussianBeamPropagation"/><meta property="og:title" content="Angle utilities · GaussianBeamPropagation"/><meta property="twitter:title" content="Angle utilities · GaussianBeamPropagation"/><meta name="description" content="Documentation for GaussianBeamPropagation."/><meta property="og:description" content="Documentation for GaussianBeamPropagation."/><meta property="twitter:description" content="Documentation for GaussianBeamPropagation."/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.63.2/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">GaussianBeamPropagation</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Introduction</a></li><li><a class="tocitem" href="../../getting_started/">How to get started</a></li><li><span class="tocitem">API</span><ul><li><a class="tocitem" href="../../api/beams/">Beams</a></li><li><a class="tocitem" href="../../api/helpers/">Helpers</a></li><li><a class="tocitem" href="../../api/elements/">Elements</a></li><li><a class="tocitem" href="../../api/sampling/">Sampling beams</a></li></ul></li><li><a class="tocitem" href="../../fitting/">Fitting</a></li><li><a class="tocitem" href="../../integration/">Integration with other packages</a></li><li><a class="tocitem" href="../../reference/">API Reference</a></li><li><span class="tocitem">Future work</span><ul><li><a class="tocitem" href="../optical_assembly/">Optical assemblies</a></li><li><a class="tocitem" href="../propagation/">Propagation along a system</a></li><li><a class="tocitem" href="../moment_types/">Moment types</a></li><li class="is-active"><a class="tocitem" href>Angle utilities</a><ul class="internal"><li><a class="tocitem" href="#Earlier-variants-of-the-swap-detection"><span>Earlier variants of the swap detection</span></a></li><li><a class="tocitem" href="#Outlier-removal-and-the-remaining-variants"><span>Outlier removal and the remaining variants</span></a></li></ul></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Future work</a></li><li class="is-active"><a href>Angle utilities</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Angle utilities</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/LukasACH/GaussianBeamPropagation.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/LukasACH/GaussianBeamPropagation.jl/blob/main/docs/src/future_work/angle_utilities.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Angle-utilities"><a class="docs-heading-anchor" href="#Angle-utilities">Angle utilities</a><a id="Angle-utilities-1"></a><a class="docs-heading-anchor-permalink" href="#Angle-utilities" title="Permalink"></a></h1><div class="admonition is-info" id="Not-part-of-the-package-b5e9d567701305d3"><header class="admonition-header">Not part of the package<a class="admonition-anchor" href="#Not-part-of-the-package-b5e9d567701305d3" title="Permalink"></a></header><div class="admonition-body"><p>This code is not loaded by the package. It is kept here as a starting point for future work.</p></div></div><p>The functions <a href="../../api/sampling/#GaussianBeamPropagation.sample_beam-api-sampling"><code>sample_beam</code></a>, <a href="../../api/sampling/#GaussianBeamPropagation.sample_beam_continuous-api-sampling"><code>sample_beam_continuous</code></a> and <a href="../../api/sampling/#GaussianBeamPropagation.sample_beam_at_angle-api-sampling"><code>sample_beam_at_angle</code></a> are part of the package. They follow the principal axes of a beam through a sequence of beams, for example along a scan of a parameter. For this, they need to detect when the axes swap, i.e. when the orientation of the principal axes rotates past ±45°.</p><p>Several approaches to this detection were tried. The one that works is used in the package (<code>count_quarter_turns</code>). The others are collected here.</p><h2 id="Earlier-variants-of-the-swap-detection"><a class="docs-heading-anchor" href="#Earlier-variants-of-the-swap-detection">Earlier variants of the swap detection</a><a id="Earlier-variants-of-the-swap-detection-1"></a><a class="docs-heading-anchor-permalink" href="#Earlier-variants-of-the-swap-detection" title="Permalink"></a></h2><p>The first version of <code>find_continous_angle</code> computed an unwrapped angle in steps of π/2 before switching to the current approach, and contained a second, unreachable approach after its <code>return</code>:</p><pre><code class="language-julia hljs">function find_continous_angle(ang::AbstractVector{T}) where {T&lt;:AbstractFloat}
+    angle_90 = @. mod2pi(4ang + π) / 4 - π / 4
+    angle_90_unwrapped = unwrap(angle_90; range=π / 2)
+    ints = @. Int(round((ang - angle_90_unwrapped) / (π / 2)))
+    # return ints
+
+    angle_clamped = @. mod(2ang / π + 0.5, 1) - 0.5
+    angle_clamped_2 = @. mod(2ang / π + 1, 2) - 1
+    angle_unwrapped = unwrap(angle_clamped; range=1)
+    ints = @. Int(round(angle_clamped_2 - angle_unwrapped))
+    return ints
+
+    # The angle is between 0 and 2π. We only care about 0 and π. We want to detect if the angle changed by π/2.
+    # When we take the difference between two consecutive angles, if they are offset by more than π/4, we consider this a change.
+    # For that, we want to first calculate the differences, and then check if they are between π/4 and 3π/4 or 5π/4 and 7π/4.
+    angle_differece = @views ang[begin:(end - 1)] - ang[(begin + 1):end]
+    # Now we map everything onto 0 and π.
+    angle_differece_mod = @. mod2pi(2angle_differece) / 2
+
+    bang = @. (1π / 4 &lt; angle_differece_mod &lt; 3π / 4)
+
+    flip = Vector{Int}(undef, length(ang))
+    fill!(flip, 0)
+    # flip[begin] = 0
+    # flip_view = @view flip[begin+1:end]
+    # cumsum!(flip_view, bang)
+    return flip
+end</code></pre><h2 id="Outlier-removal-and-the-remaining-variants"><a class="docs-heading-anchor" href="#Outlier-removal-and-the-remaining-variants">Outlier removal and the remaining variants</a><a id="Outlier-removal-and-the-remaining-variants-1"></a><a class="docs-heading-anchor-permalink" href="#Outlier-removal-and-the-remaining-variants" title="Permalink"></a></h2><p><code>EliminateOutlier</code> was an attempt to remove single outliers from a sequence of angles, by estimating the &quot;jolt&quot; (the fourth derivative) of the angle with a five-point stencil and skipping values where it is large. An iterator version with a predictor based on the angle and its first three derivatives was also tried, but did not work well (see the comment in the code). <code>eliminate_outliers</code> was started with the same idea, but is unfinished and does not run (it indexes before the start of the vector, and uses undefined variables).</p><p><code>find_continous_angle1</code>, <code>find_continous_angle2</code> and <code>find_continous_angle3</code> detect jumps between consecutive angles by thresholding their differences, or by comparing the second derivatives of both possible orientations.</p><pre><code class="language-julia hljs">struct EliminateOutlier{T}
+    func::Any
+    angles::Any
+    threshold::Any
+
+    function EliminateOutlier(func, angles::AbstractArray{T}; threshold=0.1) where {T}
+        return new{T}(func, angles, threshold)
+    end
+end
+EliminateOutlier(angles; threshold=0.1) = EliminateOutlier(identity, angles; threshold)
+
+import Base: length, eltype
+Base.IteratorSize(::EliminateOutlier) = Base.HasLength()
+Base.length(x::EliminateOutlier) = length(x.angles)
+Base.eltype(::Type{EliminateOutlier{T}}) where {T} = Union{T,Missing}
+
+function Base.isdone(x::EliminateOutlier, state=(; n=firstindex(x.angles)))
+    return state.n &gt; lastindex(x.angles)
+end
+
+function Base.iterate(x::EliminateOutlier, state=(; n=firstindex(x.angles)))
+    if firstindex(x.angles) + 2 &lt;= state.n &lt;= lastindex(x.angles) - 2
+        angles = x.angles[(state.n - 2):(state.n + 2)]
+        factors = [1, -4, +6, -4, +1]
+
+        values = @. exp(im * x.func(angles))
+
+        jolt = sum(factors .* values)
+        println(&quot;Jolt: $jolt ; Decision: &quot;, ifelse(abs(jolt) &gt; x.threshold, &quot;skip&quot;, &quot;keep&quot;))
+        return (ifelse(abs(jolt) &gt; x.threshold, NaN, x.angles[state.n]), (; n=state.n + 1))
+    elseif state.n &gt; lastindex(x.angles)
+        return nothing
+    else
+        return (x.angles[state.n], (; n=state.n + 1))
+    end
+end
+
+#= This doesnt work very well
+function Base.iterate(
+    x::EliminateOutlier,
+    state=(; n=firstindex(x.angles), θ=first(x.angles), ω=0.0, α=0.0, ι=0.0, dt=1),
+)
+    α_pred = muladd(state.ι, state.dt, state.α)
+    ω_pred = muladd(α_pred, state.dt, state.ω)
+    θ_pred = muladd(ω_pred, state.dt, state.θ)
+
+    dt = state.dt
+
+    if state.n &gt; lastindex(x.angles)
+        return nothing
+    end
+
+    change = abs(θ_pred - x.angles[state.n])
+    if change &lt; x.threshold
+        θ = x.angles[state.n]
+        ω = (θ - state.θ) / state.dt
+        α = (ω - state.ω) / state.dt
+        ι = (α - state.α) / state.dt
+
+        dt = 1
+
+        println(&quot;kept    $change&quot;)
+        return (θ, (; n=state.n + 1, θ, ω, α, ι, dt))
+    else
+        println(&quot;skipped $change&quot;)
+        return (
+            missing,
+            (; n=state.n + 1, θ=state.θ, ω=state.ω, α=state.α, ι=state.ι, dt=state.dt + 1),
+        )
+    end
+end =#
+
+function eliminate_outliers(θs)
+    t = 1
+    for n in eachindex(θs)
+        θ = θs[n - 1]
+        ω = θs[n - 1] - θs[n - 2]
+        α = θs[n - 1] - 2θs[n - 2] + θs[n - 3]
+        ι = θs[n - 1] - 3θs[n - 2] + 3θs[n - 3] - θs[n - 4]
+
+        θ_pred = muladd(muladd(muladd(ι, t, α), t, ω), t, θ)
+
+        θ_pred - θs[n]
+    end
+
+    ω = θ[(begin + 1):end] .- θ[begin:(end - 1)]
+    α = ω[(begin + 1):end] .- ω[begin:(end - 1)]
+    ι = α[(begin + 1):end] .- α[begin:(end - 1)]
+
+    θ[1] - θ[0]
+
+    return nothing
+end
+
+function find_continous_angle1(ang::AbstractVector{T}) where {T&lt;:AbstractFloat}
+    N = length(ang)
+
+    fang = Vector{Float64}(undef, N)
+    iang = BitArray(undef, N)
+    bang = Vector{Bool}(undef, N)
+    bang[begin] = false
+
+    fang .= mod2pi.(ang)
+    # @turbo for i in firstindex(fang):(lastindex(fang) - 1)
+    for i in firstindex(fang):(lastindex(fang) - 1)
+        delta = abs(fang[i] - fang[i + 1])
+        a = (1π / 4) &lt; delta
+        b = delta &lt; (3π / 4)
+        c = (5π / 4) &lt; delta
+        d = delta &lt; (7π / 4)
+        ab = a &amp; b
+        cd = c &amp; d
+        abcd = ab | cd
+        bang[i + 1] = abcd
+    end
+    accumulate!(xor, iang, bang)
+    return iang
+end
+
+function find_continous_angle2(ang::AbstractVector{T}) where {T&lt;:AbstractFloat}
+    # The angle is between 0 and 2π. We only care about 0 and π. We want to detect if the angle changed by π/2.
+    # When we take the difference between two consecutive angles, if they are offset by more than π/4, we consider this a change.
+    # For that, we want to first calculate the differences, and then check if they are between π/4 and 3π/4 or 5π/4 and 7π/4.
+    angle_differece = @views ang[begin:(end - 1)] - ang[(begin + 1):end]
+    # Now we map everything onto 0 and π.
+    angle_differece_mod = @. mod2pi(2angle_differece) / 2
+
+    bang = @. (1π / 4 &lt; angle_differece_mod &lt; 3π / 4)
+
+    flip = Vector{Int}(undef, length(ang))
+    flip[begin] = 0
+    flip_view = @view flip[(begin + 1):end]
+    cumsum!(flip_view, bang)
+    return flip
+end
+
+function find_continous_angle3(ang::AbstractVector{T}) where {T&lt;:AbstractFloat}
+    ang = @. mod2pi(2ang)
+    angprim = @. mod2pi(2ang + π)
+    toflip = Vector{Bool}(undef, length(ang))
+
+    for i in (firstindex(toflip) + 2):(lastindex(toflip))
+        toflip[i] =
+            abs(angle_second_derivative(ang[i - 2], ang[i - 1], ang[i])) &gt;
+            abs(angle_second_derivative(ang[i - 2], ang[i - 1], angprim[i]))
+        if toflip[i]
+            @info &quot;&quot; angle_second_derivative(ang[i - 2], ang[i - 1], ang[i]) angle_second_derivative(
+                ang[i - 2],
+                ang[i - 1],
+                angprim[i],
+            )
+        end
+        ang[i], angprim[i] =
+            (angprim[i], ang[i]) .* (toflip[i]) .+ (ang[i], angprim[i]) .* (!toflip[i])
+    end
+
+    #d1_ang = @views @. mod2pi(angle_first_derivative(ang[begin:end-1], ang[begin+1:end]))
+    #d2_ang = @views @. mod2pi(angle_second_derivative(ang[begin:end-2], ang[begin+1:end-1], ang[begin+2:end]))
+    #d2_angprim = @views @. mod2pi(angle_second_derivative(ang[begin:end-2], ang[begin+1:end-1], angprim[begin+2:end]))
+    #@info d2_ang d2_angprim
+    #toflip = @views @. (π / 2 &lt; d1_ang &lt; 3π / 2)
+    flip = Vector{Int}(undef, length(ang))
+    flip[begin] = 0
+    flip_view = @view flip[begin:end]
+    cumsum!(flip_view, toflip)
+    #display(plot(x=range(1, length(d1_ang)),y=d1_ang, Geom.line()))
+    return flip
+end
+
+angle_first_derivative(x0, x1; h=1) = (mod2pi(x1 - x0 + π) - π) / h
+
+function angle_second_derivative(x0, x1, x2; h=1)
+    return angle_first_derivative(
+        angle_first_derivative(x2, x1; h),
+        angle_first_derivative(x1, x0; h);
+        h,
+    )
+end</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../moment_types/">« Moment types</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.19.0 on <span class="colophon-date" title="Wednesday 28 October 2026 12:46">Wednesday 28 October 2026</span>. Using Julia version 1.13.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
