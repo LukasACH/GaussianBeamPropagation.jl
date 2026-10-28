@@ -4,8 +4,6 @@ function Base.:*(M::AbstractElement, beam::Beam)
     return Beam(beam.λ, M_rtm * beam_matrix * M_rtm')
 end
 
-Base.:*(M::AbstractElement, beam::Beam{F}) where {F} = M * Beam{F,TMatrix{F}}(beam)
-
 function Base.:*(Mlhs::AbstractElement, Mrhs::AbstractElement)
     return MatrixElement(get_transfer_matrix(Mlhs) * get_transfer_matrix(Mrhs))
 end

@@ -1,5 +1,3 @@
-const TMatrix{F} = SMatrix{4,4,F,16} where {F<:AbstractFloat}
-
 """
     Beam(λ, som::SecondOrderMoments)
     Beam(λ, rtm::SMatrix{4,4})
