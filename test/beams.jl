@@ -178,6 +178,10 @@
                 -Dx 0.0 1.0 0.0
                 0.0 -Dy 0.0 1.0
             ]
+
+            # A concave mirror with R = -1 m focuses at f = R/2 = 0.5 m
+            @test get_transfer_matrix(Mirror(Curvature(-1.0))) ≈
+                get_transfer_matrix(Mirror(OpticalPower(2.0)))
         end
 
         @testset "Powers" begin
