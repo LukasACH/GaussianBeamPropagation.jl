@@ -17,7 +17,7 @@ The arguments are the following:
     The coordinate system used by the matrix is right handed, where the ray or beam travels in the +z direction.
     Both the orientation angle of the surface and the orientation of the incidence plane are rotations in the x-y-plane relative to the x̂ direction.
 """
-struct OpticalInterface{T<:Real} <: AbstractElement
+struct OpticalInterface{T<:AbstractFloat} <: AbstractElement
     n::T
     surface::Curvature{T}
     incidence::IncidenceAngle{T}
@@ -27,7 +27,7 @@ struct OpticalInterface{T<:Real} <: AbstractElement
         n::B,
         incidence::IncidenceAngle{C}=IncidenceAngle(),
     ) where {A<:Real,B<:Real,C<:Real}
-        return new{promote_type(A, B, C)}(n, surface, incidence)
+        return new{float(promote_type(A, B, C))}(n, surface, incidence)
     end
 end
 

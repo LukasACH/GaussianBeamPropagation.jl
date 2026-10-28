@@ -388,6 +388,9 @@ using StaticArrays
             @testset "Integer input" begin
                 @test Mirror(Curvature(1, 0, 1)) isa Mirror{Float64}
                 @test ThinLens(OpticalPower(1, 0, 1)) isa ThinLens{Float64}
+                @test OpticalInterface(Curvature(1, 0, 1), 2) isa OpticalInterface{Float64}
+                @test MatrixElement(SMatrix{4,4}(1:16)) isa MatrixElement{Float64}
+                @test FreeSpace(1) isa FreeSpace{Float64}
             end
 
             @testset "Free Space" begin

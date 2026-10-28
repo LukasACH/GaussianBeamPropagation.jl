@@ -7,7 +7,7 @@ The arguments are the following:
 
   - `d::Real`: propagation distance
 """
-struct FreeSpace{T<:Real} <: AbstractElement
+struct FreeSpace{T<:AbstractFloat} <: AbstractElement
     d::T
 
     FreeSpace(d::T) where {T<:Real} = new{float(T)}(d)
