@@ -30,15 +30,25 @@ Base.vcat(a::FitParameters, b::FitParameters) =
     FitParameters(vcat(a.lower, b.lower), vcat(a.initial, b.initial), vcat(a.upper, b.upper))
 
 """
-    beam_fit_parameters(λ; radius=(1e-3, 3e-3, 10e-3))
+    beam_fit_parameters(λ; beam_radius=(1e-3, 3e-3, 10e-3))
 
-[`FitParameters`](@ref) for the ten parameters of the input beam, in the order
-`rx, ry, φ_r, θx, θy, φ_θ, rθx, rθy, φ_rθ, twist`. `radius` is the `(lower, initial, upper)`
-beam diameter in meters; the divergence bounds follow from the minimum emittance at `λ`.
+[`FitParameters`](@ref) for the ten parameters of the input beam: the principal values and
+angles of the spatial, angular and mixed moments (see [`PrincipalMoments`](@ref)), followed by
+the twist. `beam_radius` is the `(lower, initial, upper)` 1/e² beam radius in metres; the
+divergence bounds follow from the minimum emittance at `λ`.
 """
-function beam_fit_parameters(λ::Real; radius=(1.0e-3, 3.0e-3, 10.0e-3))
+function beam_fit_parameters(
+    λ::Real; beam_radius=(1.0e-3, 3.0e-3, 10.0e-3), radius=nothing,
+)
+    if !isnothing(radius)
+        Base.depwarn(
+            "The keyword radius of beam_fit_parameters is deprecated, use beam_radius instead.",
+            :beam_fit_parameters,
+        )
+        beam_radius = radius
+    end
     ε2 = (λ / 4π)^2
-    w2_lb, w2, w2_up = (radius ./ 2) .^ 2
+    w2_lb, w2, w2_up = (beam_radius ./ 2) .^ 2
 
     return FitParameters(
         [w2_lb, w2_lb, -2π, ε2 / w2_up, ε2 / w2_up, -2π, -Inf, -Inf, -2π, 0.0],
@@ -48,12 +58,13 @@ function beam_fit_parameters(λ::Real; radius=(1.0e-3, 3.0e-3, 10.0e-3))
 end
 
 """
-    observation(wx, wy, φ)
+    moments_from_radius(wx, wy, φ)
 
-Second-order moments `(rxrx, rxry, ryry)` of measured beams with radii `wx`, `wy` along the
-principal axes, rotated by `φ`.
+Spatial second-order moments `(rxrx, rxry, ryry)` of measured beams with the 1/e² radii `wx`
+and `wy` along the principal axes, rotated by `φ`. This is the inverse of [`radius`](@ref),
+applied element-wise to vectors of measurements.
 """
-function observation(wx, wy, φ)
+function moments_from_radius(wx, wy, φ)
     rx = @. (wx / 2)^2
     ry = @. (wy / 2)^2
 
@@ -110,11 +121,15 @@ Fit the input beam and the parameters of an optical system to measured beam mome
   [`Beam`](@ref)) for one measurement: `row` is a row of `vars` and `params` the current
   system parameters.
 - `vars` is a matrix with one row of measurement settings per observation (e.g. a distance).
-- `observed` is the tuple `(rxrx, rxry, ryry)` of measured moments, see [`observation`](@ref).
+- `observed` is the tuple `(rxrx, rxry, ryry)` of measured moments, see
+  [`moments_from_radius`](@ref).
 - `system_params` holds the bounds and initial values of the system parameters, and
-  `beam_params` those of the input beam (see [`beam_fit_parameters`](@ref)). To fit only
-  the system, or only the beam, give a fixed `FitParameters` (lower == initial == upper)
-  for the other.
+  `beam_params` those of the input beam (see [`beam_fit_parameters`](@ref)).
+
+!!! warning "Bounds"
+
+    The default optimiser, Nelder-Mead, does not enforce the bounds, and fitted values can
+    leave them. In particular, parameters cannot be fixed by setting equal bounds.
 
 Returns a [`SystemFit`](@ref).
 """

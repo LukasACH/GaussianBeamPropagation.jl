@@ -42,8 +42,10 @@ export Curvature, OpticalPower, IncidenceAngle
 export radius, divergence, phase_curvature, twist
 export sample_beam, sample_beam_continuous, sample_beam_at_angle
 
-export fit_system, propagation_fitting, FitParameters, beam_fit_parameters, observation, SystemFit
+export fit_system, fit_propagation, FitParameters, beam_fit_parameters, moments_from_radius, SystemFit
 # Deprecated:
 @deprecate iso_radius radius
+@deprecate propagation_fitting fit_propagation
+@deprecate observation moments_from_radius
 
 end # module
