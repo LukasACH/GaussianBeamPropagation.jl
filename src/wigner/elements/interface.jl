@@ -32,13 +32,13 @@ struct OpticalInterface{T<:Real} <: AbstractElement
 end
 
 function get_transfer_matrix(e::OpticalInterface{T})::SMatrix{4,4,T,16} where {T}
-    κxx, κxy, κyy = rotate3(e.surface.xx, e.surface.xy, e.surface.yy, -e.incidence.θ)
+    κxx, κxy, κyy = rotate_symmetric(e.surface.xx, e.surface.xy, e.surface.yy, -e.incidence.θ)
 
     V = sqrt(e.n^2 - sin(e.incidence.ι)^2)
 
-    Axx, Axy, Ayy = rotate2(V / cos(e.incidence.ι) / e.n, 1, e.incidence.θ)
-    Dxx, Dxy, Dyy = rotate2(cos(e.incidence.ι) / V, 1 / e.n, e.incidence.θ)
-    Mxx, Mxy, Myx, Myy = rotate4(
+    Axx, Axy, Ayy = tensor_from_principal(V / cos(e.incidence.ι) / e.n, 1, e.incidence.θ)
+    Dxx, Dxy, Dyy = tensor_from_principal(cos(e.incidence.ι) / V, 1 / e.n, e.incidence.θ)
+    Mxx, Mxy, Myx, Myy = rotate_general(
         κxx * (V - cos(e.incidence.ι)) / V / cos(e.incidence.ι),
         κxy * (V - cos(e.incidence.ι)) / V,
         κxy * (V - cos(e.incidence.ι)) / cos(e.incidence.ι) / e.n,

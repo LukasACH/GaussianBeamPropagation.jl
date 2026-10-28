@@ -24,9 +24,9 @@ function Mirror(power::OpticalPower, args...)
 end
 
 function get_transfer_matrix(e::Mirror{T})::SMatrix{4,4,T,16} where {T}
-    κxx, κxy, κyy = rotate3(e.surface.xx, e.surface.xy, e.surface.yy, -e.incidence.θ)
+    κxx, κxy, κyy = rotate_symmetric(e.surface.xx, e.surface.xy, e.surface.yy, -e.incidence.θ)
 
-    Mxx, Mxy, Myy = rotate3(
+    Mxx, Mxy, Myy = rotate_symmetric(
         κxx / 2 * sec(e.incidence.ι),
         κxy / 2,
         κyy / 2 * cos(e.incidence.ι),

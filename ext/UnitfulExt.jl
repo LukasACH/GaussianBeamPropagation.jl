@@ -19,7 +19,7 @@ GaussianBeamPropagation.Curvature(κx::Quantity{A,Unitful.𝐋^-1}, κy::Quantit
 
 GaussianBeamPropagation.Curvature(κ::Quantity{<:Real,Unitful.𝐋^-1}) = Curvature(ustrip(u"m^-1", κ))
 
-function GaussianBeamPropagation.rotate2(
+function GaussianBeamPropagation.tensor_from_principal(
     x::Quantity{<:Real,D}, y::Quantity{<:Real,D}, α::Real
 ) where {D}
     s, c = sincos(α)
@@ -157,9 +157,9 @@ function GaussianBeamPropagation.SecondOrderMoments(
         throw(ArgumentError("insufficient parameters: each axis needs (z, zR), (w, r) or q"))
     end
 
-    rxrx, rxry, ryry = GaussianBeamPropagation.rotate2(rxrx_, ryry_, φ)
-    θxθx, θxθy, θyθy = GaussianBeamPropagation.rotate2(θxθx_, θyθy_, φ)
-    rxθx, rxθy, ryθy = GaussianBeamPropagation.rotate2(rxθx_, ryθy_, φ)
+    rxrx, rxry, ryry = GaussianBeamPropagation.tensor_from_principal(rxrx_, ryry_, φ)
+    θxθx, θxθy, θyθy = GaussianBeamPropagation.tensor_from_principal(θxθx_, θyθy_, φ)
+    rxθx, rxθy, ryθy = GaussianBeamPropagation.tensor_from_principal(rxθx_, ryθy_, φ)
     ryθx = rxθy
 
     @debug "" rxrx rxry ryry θxθx θxθy θyθy rxθx rxθy ryθy

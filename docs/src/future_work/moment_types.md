@@ -20,7 +20,7 @@ Instead of storing ten loose numbers in `SecondOrderMoments`, these blocks could
 
 This would make it possible to reuse code through the type system:
 
-- The rotation helpers `rotate3` and `rotate4` act on exactly these blocks, and could become methods of a single `rotate(m::AbstractMoments, α)`.
+- The rotation helpers `rotate_symmetric` and `rotate_general` (formerly `rotate3` and `rotate4`) act on exactly these blocks, and could become methods of a single `rotate(m::AbstractMoments, α)`.
 - If the types behave like 2×2 matrices (e.g. by subtyping `StaticArrays.StaticMatrix(2, 2)` or by implementing the `AbstractMatrix` interface), the beam quantities could be computed directly from them: [`radius`](@ref) and [`divergence`](@ref) are the eigen-decompositions of the spatial and angular blocks, and the [`twist`](@ref) is the antisymmetric part of the mixed block.
 - The same principal-axis decomposition is used by `Curvature` and `OpticalPower`, which could share it.
 
