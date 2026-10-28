@@ -17,6 +17,7 @@ makedocs(;
             "Optical assemblies"=>"future_work/optical_assembly.md",
             "Propagation along a system"=>"future_work/propagation.md",
             "Moment types"=>"future_work/moment_types.md",
+            "Angle utilities"=>"future_work/angle_utilities.md",
         ],
     ],
 )
