@@ -68,15 +68,9 @@ end
 beam_from_parameters(λ, p) = Beam(
     λ,
     SecondOrderMoments(;
-        rx=abs(p[1]),
-        ry=abs(p[2]),
-        φ_r=p[3],
-        θx=p[4],
-        θy=p[5],
-        φ_θ=p[6],
-        rθx=p[7],
-        rθy=p[8],
-        φ_rθ=p[9],
+        spatial=PrincipalMoments(abs(p[1]), abs(p[2]), p[3]),
+        angular=PrincipalMoments(p[4], p[5], p[6]),
+        mixed=PrincipalMoments(p[7], p[8], p[9]),
         twist=p[10],
     ),
 )

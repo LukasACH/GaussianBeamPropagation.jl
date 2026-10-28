@@ -5,6 +5,7 @@ using StaticArrays, Optim
 include("tensors.jl")
 
 include("wigner/second_order_moments.jl")
+include("wigner/axis_parameters.jl")
 include("wigner/beam.jl")
 
 include("descriptors/symmetric_descriptor.jl")
@@ -29,7 +30,8 @@ include("beam_sampling.jl")
 include("fitting/system_fitting.jl")
 include("fitting/propagation_fitting.jl")
 
-export Beam, SecondOrderMoments
+export Beam, SecondOrderMoments, PrincipalMoments
+export AxisParameters, BeamRadius, Waist, RayleighRange, ComplexBeamParameter
 export ThinLens,
     FreeSpace, OpticalInterface, MatrixElement, AbstractElement, ThickLens, Mirror
 
