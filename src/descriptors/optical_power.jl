@@ -64,7 +64,7 @@ Base.:/(P::OpticalPower, a::Real) =
     OpticalPower(P.xx / a, P.xy / a, P.yy/a)
 
 function Base.show(io::IO, ::MIME"text/plain", P::OpticalPower{T}) where {T}
-    x, y, φ = get_x_y_φ(P.xx, P.xy, P.yy)
+    x, y, φ = principal_axes(P.xx, P.xy, P.yy)
 
     return print(
         io,
