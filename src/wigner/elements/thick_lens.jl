@@ -10,7 +10,7 @@ The arguments are the following:
 
   - `front_surface::Curvature`: curvature of the front lens surface given by [`Curvature`](@ref), where a positive curvature denotes that the center of curvature lies after the lens, i.e., the front surface is convex.
   - `thickness::Real`: thickness of the lens where the ray or beam passes through.
-  - `back_surface::Curvature`: curvature of the back given by [`Curvature`](@ref), where a positive curvature denotes that the center of curvature lies after the lens, i.e., the back surface is concave.
+  - `back_surface::Curvature`: curvature of the back given by [`Curvature`](@ref), where a positive curvature denotes that the center of curvature lies after the lens, i.e., the back surface is concave. The back surface of a biconvex lens has a negative curvature.
   - `n::Real`: ratio of the refractive index of the lens material to the refractive index of the surrounding material.
   - `incidence::IncidenceAngle` (optional): if given, defines the direction of the incident ray or beam using [`IncidenceAngle`](@ref). If absent, it is assumed that the ray is parallel to the surface normal in the center (disregarding any surface curvature).
 

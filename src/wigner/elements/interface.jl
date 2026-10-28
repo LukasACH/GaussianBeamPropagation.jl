@@ -8,7 +8,7 @@ This is a matrix builder that constructs the matrix for a refractive interface b
 
 The arguments are the following:
 
-  - `surface::Curvature`: curvature of the interface given by [`Curvature`](@ref), where a positive curvature denotes that the center of curvature lies after the interface.
+  - `surface::Curvature`: curvature of the interface given by [`Curvature`](@ref), where a positive curvature denotes that the center of curvature lies after the interface, i.e., the surface is convex towards the incoming beam.
   - `n::Real`: ratio of the refractive index of the material after the interface to the refractive index of the material before the interface.
   - `incidence::IncidenceAngle` (optional): if given, defines the direction of the incident ray or beam using [`IncidenceAngle`](@ref). If absent, it is assumed that the ray is parallel to the surface normal in the center (disregarding any surface curvature).
 
@@ -38,11 +38,12 @@ function get_transfer_matrix(e::OpticalInterface{T})::SMatrix{4,4,T,16} where {T
 
     Axx, Axy, Ayy = tensor_from_principal(V / cos(e.incidence.ι) / e.n, 1, e.incidence.θ)
     Dxx, Dxy, Dyy = tensor_from_principal(cos(e.incidence.ι) / V, 1 / e.n, e.incidence.θ)
+    # A positive curvature (convex towards the incoming beam) focuses for n > 1
     Mxx, Mxy, Myx, Myy = rotate_general(
-        κxx * (V - cos(e.incidence.ι)) / V / cos(e.incidence.ι),
-        κxy * (V - cos(e.incidence.ι)) / V,
-        κxy * (V - cos(e.incidence.ι)) / cos(e.incidence.ι) / e.n,
-        κyy * (V - cos(e.incidence.ι)) / e.n,
+        κxx * (cos(e.incidence.ι) - V) / V / cos(e.incidence.ι),
+        κxy * (cos(e.incidence.ι) - V) / V,
+        κxy * (cos(e.incidence.ι) - V) / cos(e.incidence.ι) / e.n,
+        κyy * (cos(e.incidence.ι) - V) / e.n,
         e.incidence.θ,
     )
 

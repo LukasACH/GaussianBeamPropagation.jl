@@ -32,6 +32,13 @@ Instead of providing the curvature in the principal directions with a rotation a
     Both the orientation angle of the surface and the orientation of the incidence plane are rotations in the x-y-plane relative to the x̂ direction.
 
 The curvature _κ_ of a surface is the inverse of its radius of curvature _R_, such that _R_ ≡ _κ_⁻¹. It is given in units of inverse metre.
+
+!!! note "Sign convention"
+
+    The sign follows the convention of optical design, with the beam travelling from left to right: the curvature is
+    positive if the center of curvature lies after the surface, and negative if it lies before. The front surface of
+    a biconvex lens therefore has a positive curvature and its back surface a negative one, and a concave mirror has a
+    negative curvature.
 """
 struct Curvature{T<:Real} <: SymmetricDescriptor{T}
     xx::T
